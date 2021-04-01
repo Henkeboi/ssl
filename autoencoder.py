@@ -5,7 +5,7 @@ import keras
 from keras.utils.np_utils import to_categorical
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
-from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout
+from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout, Reshape
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -108,98 +108,104 @@ class Autoencoder:
         self.autoencoder.fit(x_train, x_train, epochs=3)
     
 def autotest():
-    latent_units_size = 20
-    autoencoder = Autoencoder((28 * 28), latent_units_size, [784, 100], [100, 784])
-
-    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-    x_train = x_train.astype('float32') / 255.0
-    x_test = x_test.astype('float32') / 255.0
-
-    x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
-    x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
-
-    autoencoder.train(x_train)
-    plot_autoencoder_outputs(autoencoder.autoencoder, 5, (28, 28), x_test)
-
-    quit()
-
-    input_size = 784
-    hidden_size = 128
-    code_size = 32
-
-    input_img = Input(shape=(input_size,))
-    hidden_1 = Dense(hidden_size, activation='relu')(input_img)
-    code = Dense(code_size, activation='relu')(hidden_1)
-    hidden_2 = Dense(hidden_size, activation='relu')(code)
-    output_img = Dense(input_size, activation='sigmoid')(hidden_2)
-    code1 = Dense(input_size, activation='relu')(hidden_1)
-
-    autoencoder = Model(input_img, output_img)
-    autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
-    autoencoder.fit(x_train, x_train, epochs=3)
-
-    encoder = Model(input_img, code1)
-    encoder.compile(optimizer='adam', loss='binary_crossentropy')
-
-    # plot_autoencoder_outputs(autoencoder, 5, (28, 28), x_test)
-
+    dataset = "cifar"
+    if dataset == "mnist":
+        image_size = 28
+        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+        x_train = x_train.astype('float32') / 255.0
+        x_test = x_test.astype('float32') / 255.0
+        x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+        x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+        latent_units_size = 20
+        autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
+        autoencoder.train(x_train)
+        plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
+    elif dataset == "fashion_mnist":
+        image_size = 28
+        (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
+        x_train = x_train.astype('float32') / 255.0
+        x_test = x_test.astype('float32') / 255.0
+        x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+        x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+        autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
+        autoencoder.train(x_train)
+        plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
+    else:
+        image_size = 32
+        latent_units_size = 20
+        (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
+        x_train = x_train.astype('float32') / 255.0
+        x_test = x_test.astype('float32') / 255.0
+        x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+        x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+        autoencoder = Autoencoder((32 * 32 * 3), latent_units_size, [3 * image_size ** 2, 120], [120, 3 * image_size ** 2])
+        autoencoder.train(x_train)
+        plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
 
 def main():
     autotest()
     quit()
     (x_train, y_train), (x_validation, y_validation) = data.load_mnist()
 
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    x_train = x_train.astype('float32') / 255.0
+    x_test = x_test.astype('float32') / 255.0
+    x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+    x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+
     input_shape = (28, 28, 1)
     inputs = Input(shape=input_shape)
-    y = Conv2D(filters=1, kernel_size=(3, 3), activation='relu')(inputs)
+    y = Conv2D(filters=1, kernel_size=(2, 2), activation='relu')(inputs)
     y = MaxPooling2D()(y)
     y = Conv2D(filters=1, kernel_size=1, activation='relu')(y)
     y = Flatten()(y)
-    y = Dropout(0.01)(y)
-    y = Dense(100, activation='softmax')(y)
-    outputs = Dense(10, activation='softmax')(y)
+    y = Dropout(0.1)(y)
+    outputs = Dense(28 * 28, activation='sigmoid')(y)
+    #y = Reshape(target_shape=(10, 10, 1))(y)
+    #y = Conv2DTranspose(filters=1 , kernel_size=(1, 1), activation='relu')(y)
+    #outputs = Conv2DTranspose(filters=1 , kernel_size=(1, 1), activation='softmax')(y)
 
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], x_train.shape[2], 1)
-    y_train = to_categorical(y_train, 10)
     model = Model(inputs=inputs, outputs=outputs)
     model.compile(optimizer='adam', loss='categorical_crossentropy')
-    model.fit(x_train, y_train)
+    model.fit(x_train, x_train)
+    #plot_autoencoder_outputs(model, 5, (28, 28), x_train)
 
     quit()
-    #la = 0.1
-    #conv_input_shapes = []
-    #conv_filters = []
-    #conv_kernel_sizes = []
-    #conv_af = []
 
-    #conv_input_shapes.append((28, 28, 1))
-    #conv_filters.append(5)
-    #conv_kernel_sizes.append((2, 2))
-    #conv_af.append(tf.nn.relu)
+    la = 0.1
+    conv_input_shapes = []
+    conv_filters = []
+    conv_kernel_sizes = []
+    conv_af = []
 
-    #conv_input_shapes.append(None)
-    #conv_filters.append(2)
-    #conv_kernel_sizes.append((2, 2))
-    #conv_af.append(tf.nn.relu)
+    conv_input_shapes.append((28, 28, 1))
+    conv_filters.append(5)
+    conv_kernel_sizes.append((2, 2))
+    conv_af.append(tf.nn.relu)
 
-    #conv_layers = []
-    #for i in range(len(conv_input_shapes)):
-    #    conv_layers.append(utility.ConvConfig(conv_input_shapes[i], conv_filters[i], conv_kernel_sizes[i], conv_af[i])) 
+    conv_input_shapes.append(None)
+    conv_filters.append(2)
+    conv_kernel_sizes.append((2, 2))
+    conv_af.append(tf.nn.relu)
 
-    #dense_neurons = []
-    #dense_af = []
+    conv_layers = []
+    for i in range(len(conv_input_shapes)):
+        conv_layers.append(utility.ConvConfig(conv_input_shapes[i], conv_filters[i], conv_kernel_sizes[i], conv_af[i])) 
 
-    #dense_neurons.append(10)
-    #dense_af.append(tf.nn.softmax)
+    dense_neurons = []
+    dense_af = []
 
-    #dense_layers = []
-    #for i in range(len(dense_neurons)):
-    #    dense_layers.append(utility.DenseConfig(dense_neurons[i], dense_af[i]))
+    dense_neurons.append(10)
+    dense_af.append(tf.nn.softmax)
 
-    #encoder = Encoder(la, conv_layers, dense_layers)
-    #dense_layers = dense_layers[::-1]
-    #conv_layers = conv_layers[::-1]
-    #decoder = Decoder(la, conv_layers, dense_layers)
+    dense_layers = []
+    for i in range(len(dense_neurons)):
+        dense_layers.append(utility.DenseConfig(dense_neurons[i], dense_af[i]))
+
+    encoder = Encoder(la, conv_layers, dense_layers)
+    dense_layers = dense_layers[::-1]
+    conv_layers = conv_layers[::-1]
+    decoder = Decoder(la, conv_layers, dense_layers)
 
     #encoder.train(x_train, y_train, 3)
 
