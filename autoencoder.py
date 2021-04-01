@@ -81,12 +81,47 @@ class Decoder:
         pass
 
 
+class Autoencoder:
+    def __init__(self, input_shape, latent_size, encoder_layers, decoder_layers):
+        layers = Input(shape=input_shape)
+        input_shape = layers
+        for i in range(len(encoder_layers)):
+            layers = Dense(encoder_layers[i], activation='relu')(layers)
+
+        latent_layer = Dense(latent_size, activation='relu')(layers) # Latent layer
+
+        for i in range(len(decoder_layers)):
+            if i == len(decoder_layers) - 1:
+                layers = Dense(decoder_layers[i], activation='sigmoid')(layers)
+            elif i == 0:
+                layers = Dense(decoder_layers[i], activation='relu')(latent_layer)
+            else:
+                layers = Dense(decoder_layers[i], activation='relu')(layers)
+
+        self.autoencoder = Model(input_shape, layers)
+        self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
+
+        self.encoder = Model(input_shape, latent_layer)
+        self.encoder.compile(optimizer='adam', loss='binary_crossentropy')
+
+    def train(self, x_train):
+        self.autoencoder.fit(x_train, x_train, epochs=3)
+    
 def autotest():
+    latent_units_size = 20
+    autoencoder = Autoencoder((28 * 28), latent_units_size, [784, 100], [100, 784])
+
     (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
+
     x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
     x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+
+    autoencoder.train(x_train)
+    plot_autoencoder_outputs(autoencoder.autoencoder, 5, (28, 28), x_test)
+
+    quit()
 
     input_size = 784
     hidden_size = 128
@@ -97,19 +132,16 @@ def autotest():
     code = Dense(code_size, activation='relu')(hidden_1)
     hidden_2 = Dense(hidden_size, activation='relu')(code)
     output_img = Dense(input_size, activation='sigmoid')(hidden_2)
-
     code1 = Dense(input_size, activation='relu')(hidden_1)
-
 
     autoencoder = Model(input_img, output_img)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
     autoencoder.fit(x_train, x_train, epochs=3)
 
-    #encoder = Model(input_img, code1)
-    #encoder.compile(optimizer='adam', loss='binary_crossentropy')
-    #encoder.fit(x_train, x_train)
+    encoder = Model(input_img, code1)
+    encoder.compile(optimizer='adam', loss='binary_crossentropy')
 
-    plot_autoencoder_outputs(autoencoder, 5, (28, 28), x_test)
+    # plot_autoencoder_outputs(autoencoder, 5, (28, 28), x_test)
 
 
 def main():
