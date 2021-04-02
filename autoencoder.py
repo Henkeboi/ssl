@@ -5,9 +5,10 @@ import keras
 from keras.utils.np_utils import to_categorical
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
-from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout, Reshape
+from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout, Reshape, BatchNormalization
 import numpy as np
 import matplotlib.pyplot as plt
+from keras.optimizers import SGD
 
 def plot_autoencoder_outputs(autoencoder, n, dims, x_test):
     decoded_imgs = autoencoder.predict(x_test)
@@ -136,6 +137,36 @@ def autotest():
         (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
         x_train = x_train.astype('float32') / 255.0
         x_test = x_test.astype('float32') / 255.0
+        y_train = to_categorical(y_train, 10)
+        #x_train = x_train.reshape(450000, x_train.shape[1], x_train.shape[2], 3)
+
+        input_shape = Input(shape=(32, 32, 3))
+        layers = input_shape
+        layers = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layers)
+        layers = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layers)
+        layers = MaxPooling2D((2, 2))(layers)
+        layers = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(layers)
+        layers = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(layers)
+        layers = MaxPooling2D((2, 2))(layers)
+        layers = Flatten()(layers)
+        layers = Dense(128, activation='relu')(layers)
+        layers = Dense(10, activation='softmax')(layers)
+        #layers = Dense(10, activation='relu')(layers)
+        #layers = Dense(625, activation='relu')(layers)
+
+        #layers = Reshape((25, 25, 1))(layers)
+        #layers = Conv2DTranspose(filters=1, kernel_size=(8, 8), activation='sigmoid')(layers)
+
+        opt = SGD(lr=0.1, momentum=0.9)
+        autoencoder = Model(input_shape, layers)
+        autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        autoencoder.fit(x_train, y_train, epochs=4)
+        #plot_autoencoder_outputs(autoencoder, 5, (image_size, image_size), x_train)
+        quit()
+
+        self.autoencoder = Model(input_shape, layers)
+        self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
+
         x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
         x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
         autoencoder = Autoencoder((32 * 32 * 3), latent_units_size, [3 * image_size ** 2, 120], [120, 3 * image_size ** 2])
