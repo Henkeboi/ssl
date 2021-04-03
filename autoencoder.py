@@ -138,8 +138,6 @@ def autotest():
         x_test = x_test.astype('float32') / 255.0
         y_test = to_categorical(y_test, 10)
         y_train = to_categorical(y_train, 10)
-        x_train = x_train[0 : len(x_train) - len(x_train) // 3]
-        y_train = y_train[0 : len(y_train) - len(y_train) // 3]
 
         # Unlabled
         x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 3]
@@ -165,7 +163,7 @@ def autotest():
         layers = MaxPooling2D((1, 1))(layers)
         layers = Conv2DTranspose(filters=16, kernel_size=(4, 4), activation='relu')(layers)
         layers = Conv2DTranspose(filters=3, kernel_size=(6, 6), activation='sigmoid')(layers)
-        layers = MaxPooling2D((1, 1))(layers)
+        #layers = MaxPooling2D((1, 1))(layers)
         layers = Reshape((32, 32, 3))(layers)
 
         opt = SGD(lr=0.1, momentum=0.1)
@@ -177,7 +175,6 @@ def autotest():
         classifier1.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
         classifier1.fit(x_train_D2, y_train_D2)
 
-        
         result1 = classifier1.evaluate(x_test, y_test, verbose=0)
         print(result1)
 
@@ -193,8 +190,6 @@ def main():
     x_test = x_test.astype('float32') / 255.0
     y_test = to_categorical(y_test, 10)
     y_train = to_categorical(y_train, 10)
-    x_train = x_train[0 : len(x_train) - len(x_train) // 3]
-    y_train = y_train[0 : len(y_train) - len(y_train) // 3]
 
     # Unlabled
     x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 3]
@@ -202,7 +197,6 @@ def main():
     # Labled
     x_train_D2 = x_train[len(x_train) - len(x_train) // 3 :]
     y_train_D2 = y_train[len(y_train) - len(y_train) // 3 :]
-
 
     opt = SGD(lr=0.1, momentum=0.1)
     input_shape = Input(shape=(32, 32, 3))
@@ -223,72 +217,6 @@ def main():
 
     result2 = classifier2.evaluate(x_test, y_test, verbose=0)
     print(result2)
-
-    quit()
-
-    (x_train, y_train), (x_validation, y_validation) = data.load_mnist()
-
-    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-    x_train = x_train.astype('float32') / 255.0
-    x_test = x_test.astype('float32') / 255.0
-    x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
-    x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
-
-    input_shape = (28, 28, 1)
-    inputs = Input(shape=input_shape)
-    y = Conv2D(filters=1, kernel_size=(2, 2), activation='relu')(inputs)
-    y = MaxPooling2D()(y)
-    y = Conv2D(filters=1, kernel_size=1, activation='relu')(y)
-    y = Flatten()(y)
-    y = Dropout(0.1)(y)
-    outputs = Dense(28 * 28, activation='sigmoid')(y)
-    #y = Reshape(target_shape=(10, 10, 1))(y)
-    #y = Conv2DTranspose(filters=1 , kernel_size=(1, 1), activation='relu')(y)
-    #outputs = Conv2DTranspose(filters=1 , kernel_size=(1, 1), activation='softmax')(y)
-
-    model = Model(inputs=inputs, outputs=outputs)
-    model.compile(optimizer='adam', loss='categorical_crossentropy')
-    model.fit(x_train, x_train)
-    #plot_autoencoder_outputs(model, 5, (28, 28), x_train)
-
-    quit()
-
-    la = 0.1
-    conv_input_shapes = []
-    conv_filters = []
-    conv_kernel_sizes = []
-    conv_af = []
-
-    conv_input_shapes.append((28, 28, 1))
-    conv_filters.append(5)
-    conv_kernel_sizes.append((2, 2))
-    conv_af.append(tf.nn.relu)
-
-    conv_input_shapes.append(None)
-    conv_filters.append(2)
-    conv_kernel_sizes.append((2, 2))
-    conv_af.append(tf.nn.relu)
-
-    conv_layers = []
-    for i in range(len(conv_input_shapes)):
-        conv_layers.append(utility.ConvConfig(conv_input_shapes[i], conv_filters[i], conv_kernel_sizes[i], conv_af[i])) 
-
-    dense_neurons = []
-    dense_af = []
-
-    dense_neurons.append(10)
-    dense_af.append(tf.nn.softmax)
-
-    dense_layers = []
-    for i in range(len(dense_neurons)):
-        dense_layers.append(utility.DenseConfig(dense_neurons[i], dense_af[i]))
-
-    encoder = Encoder(la, conv_layers, dense_layers)
-    dense_layers = dense_layers[::-1]
-    conv_layers = conv_layers[::-1]
-    decoder = Decoder(la, conv_layers, dense_layers)
-
-    #encoder.train(x_train, y_train, 3)
 
 if __name__ == '__main__':
     main()
