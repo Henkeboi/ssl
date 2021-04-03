@@ -163,10 +163,9 @@ def autotest():
         layers = MaxPooling2D((1, 1))(layers)
         layers = Conv2DTranspose(filters=16, kernel_size=(4, 4), activation='relu')(layers)
         layers = Conv2DTranspose(filters=3, kernel_size=(6, 6), activation='sigmoid')(layers)
-        #layers = MaxPooling2D((1, 1))(layers)
         layers = Reshape((32, 32, 3))(layers)
 
-        opt = SGD(lr=0.1, momentum=0.1)
+        opt = SGD(lr=0.1, momentum=0.0)
         autoencoder = Model(input_shape, layers)
         autoencoder.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
         autoencoder.fit(x_train_D1, x_train_D1, epochs=1)
@@ -176,6 +175,7 @@ def autotest():
         classifier1.fit(x_train_D2, y_train_D2)
 
         result1 = classifier1.evaluate(x_test, y_test, verbose=0)
+        print("Autoencoder:")
         print(result1)
 
         #autoencoder.fit(x_train, y_train, epochs=1)
@@ -198,7 +198,7 @@ def main():
     x_train_D2 = x_train[len(x_train) - len(x_train) // 3 :]
     y_train_D2 = y_train[len(y_train) - len(y_train) // 3 :]
 
-    opt = SGD(lr=0.1, momentum=0.1)
+    opt = SGD(lr=0.1, momentum=0.0)
     input_shape = Input(shape=(32, 32, 3))
     layers = input_shape
     layers = Conv2D(filters=16, kernel_size=(6, 6), activation='relu')(layers)
@@ -216,6 +216,7 @@ def main():
     classifier2.fit(x_train_D2, y_train_D2)
 
     result2 = classifier2.evaluate(x_test, y_test, verbose=0)
+    print("Classifier:")
     print(result2)
 
 if __name__ == '__main__':
