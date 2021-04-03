@@ -138,65 +138,94 @@ def autotest():
         x_test = x_test.astype('float32') / 255.0
         y_test = to_categorical(y_test, 10)
         y_train = to_categorical(y_train, 10)
+        x_train = x_train[0 : len(x_train) - len(x_train) // 3]
+        y_train = y_train[0 : len(y_train) - len(y_train) // 3]
+
+        # Unlabled
+        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 3]
+        y_train_D1 = None
+        # Labled
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 3 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 3 :]
 
         input_shape = Input(shape=(32, 32, 3))
         layers = input_shape
-        layers = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layers)
-        layers = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layers)
+        layers = Conv2D(filters=16, kernel_size=(6, 6), activation='relu')(layers)
+        layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
         layers = MaxPooling2D((2, 2))(layers)
-        layers = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(layers)
-        layers = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(layers)
+        layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
+        layers = Conv2D(filters=4, kernel_size=(3, 3), activation='relu')(layers)
         layers = MaxPooling2D((2, 2))(layers)
         layers = Flatten()(layers)
-        layers = Dense(432, activation='relu')(layers)
+        layers = Dense(1200, activation='relu')(layers)
         latent_output = Dense(10, activation='sigmoid')(layers)
-        layers = Reshape((12, 12, 3))(layers)
-        layers = Conv2DTranspose(filters=1, kernel_size=(5, 5), activation='relu')(layers)
-        layers = Conv2DTranspose(filters=1, kernel_size=(5, 5), activation='relu')(layers)
+        layers = Reshape((20, 20, 3))(layers)
+        layers = Conv2DTranspose(filters=4, kernel_size=(3, 3), activation='relu')(layers)
+        layers = Conv2DTranspose(filters=8, kernel_size=(3, 3), activation='relu')(layers)
         layers = MaxPooling2D((1, 1))(layers)
-        layers = Conv2DTranspose(filters=3, kernel_size=(5, 5), activation='relu')(layers)
-        layers = Conv2DTranspose(filters=3, kernel_size=(9, 9), activation='sigmoid')(layers)
+        layers = Conv2DTranspose(filters=16, kernel_size=(4, 4), activation='relu')(layers)
+        layers = Conv2DTranspose(filters=3, kernel_size=(6, 6), activation='sigmoid')(layers)
         layers = MaxPooling2D((1, 1))(layers)
         layers = Reshape((32, 32, 3))(layers)
 
-        opt = SGD(lr=0.1, momentum=0.9)
+        opt = SGD(lr=0.1, momentum=0.1)
         autoencoder = Model(input_shape, layers)
         autoencoder.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-        autoencoder.fit(x_train, x_train, epochs=1)
+        autoencoder.fit(x_train_D1, x_train_D1, epochs=1)
 
         classifier1 = Model(input_shape, latent_output)
         classifier1.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-        classifier1.fit(x_train, y_train)
+        classifier1.fit(x_train_D2, y_train_D2)
 
-        input_shape = Input(shape=(32, 32, 3))
-        layers = input_shape
-        layers = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layers)
-        layers = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layers)
-        layers = MaxPooling2D((2, 2))(layers)
-        layers = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(layers)
-        layers = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(layers)
-        layers = MaxPooling2D((2, 2))(layers)
-        layers = Flatten()(layers)
-        layers = Dense(432, activation='relu')(layers)
-        latent_output = Dense(10, activation='sigmoid')(layers)
-
-        classifier2 = Model(input_shape, latent_output)
-        classifier2.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-        classifier2.fit(x_train, y_train)
-
+        
         result1 = classifier1.evaluate(x_test, y_test, verbose=0)
-        result2 = classifier2.evaluate(x_test, y_test, verbose=0)
         print(result1)
-        print(result2)
-
-
 
         #autoencoder.fit(x_train, y_train, epochs=1)
         #plot_autoencoder_outputs(autoencoder, 5, (image_size, image_size, 3), x_train)
 
 def main():
     autotest()
+    image_size = 32
+    latent_units_size = 20
+    (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
+    x_train = x_train.astype('float32') / 255.0
+    x_test = x_test.astype('float32') / 255.0
+    y_test = to_categorical(y_test, 10)
+    y_train = to_categorical(y_train, 10)
+    x_train = x_train[0 : len(x_train) - len(x_train) // 3]
+    y_train = y_train[0 : len(y_train) - len(y_train) // 3]
+
+    # Unlabled
+    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 3]
+    y_train_D1 = None
+    # Labled
+    x_train_D2 = x_train[len(x_train) - len(x_train) // 3 :]
+    y_train_D2 = y_train[len(y_train) - len(y_train) // 3 :]
+
+
+    opt = SGD(lr=0.1, momentum=0.1)
+    input_shape = Input(shape=(32, 32, 3))
+    layers = input_shape
+    layers = Conv2D(filters=16, kernel_size=(6, 6), activation='relu')(layers)
+    layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
+    layers = MaxPooling2D((2, 2))(layers)
+    layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
+    layers = Conv2D(filters=4, kernel_size=(3, 3), activation='relu')(layers)
+    layers = MaxPooling2D((2, 2))(layers)
+    layers = Flatten()(layers)
+    layers = Dense(1200, activation='relu')(layers)
+    latent_output = Dense(10, activation='sigmoid')(layers)
+
+    classifier2 = Model(input_shape, latent_output)
+    classifier2.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+    classifier2.fit(x_train_D2, y_train_D2)
+
+    result2 = classifier2.evaluate(x_test, y_test, verbose=0)
+    print(result2)
+
     quit()
+
     (x_train, y_train), (x_validation, y_validation) = data.load_mnist()
 
     (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
