@@ -100,15 +100,17 @@ class Decoder:
         layers = Dense(120, activation='relu')(layers)
         layers = Dense(784, activation='sigmoid')(layers)
         self.decoder = Model(latent_layer, layers)
+        self.decoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     def get_decoder(self):
         return self.decoder
 
-
+    def train(self, x_test):
+        autoencoder.fit(x_test, x_test, epochs=1, batch_size=50)
 
 def autotest():
-    dataset = "mnist"
-    if dataset == "cifar":
+    dataset = "rsrbse"
+    if dataset == "mnist":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
         x_train = x_train.astype('float32') / 255.0
@@ -180,8 +182,8 @@ def autotest():
         x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
         y_train_D1 = None
         # Labled
-        x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
-        y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 20 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 20 :]
 
         input_shape = Input(shape=(32, 32, 3))
         layers = input_shape
@@ -189,7 +191,7 @@ def autotest():
         layers = BatchNormalization()(layers)
         layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
         layers = BatchNormalization()(layers)
-        layers = Dense(100, activation='relu')(layers)
+        layers = Dense(400, activation='relu')(layers)
         latent_layer = layers
         layers = UpSampling2D()(layers)
         layers = Conv2D(32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
@@ -198,7 +200,7 @@ def autotest():
 
         autoencoder = Model(input_shape, layers)
         autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        #autoencoder.fit(x_train_D1, x_train_D1, epochs=2, batch_size=50)
+        #autoencoder.fit(x_train_D1, x_train_D1, epochs=1, batch_size=50)
         #utility.store_model(autoencoder, 'autoencoder')
         autoencoder = utility.load_model('autoencoder')
         autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
@@ -209,8 +211,9 @@ def autotest():
 
         #for layer in autoencoder.layers:
         #    layer.trainable = False
-        classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        classifier.fit(x_train_D2, y_train_D2, batch_size=5)
+        opt = keras.optimizers.Adam(learning_rate=0.0005) 
+        classifier.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+        classifier.fit(x_train_D2, y_train_D2, batch_size=5, epochs=1)
         result1 = classifier.evaluate(x_test, y_test, verbose=0)
         print("Autoencoder loss and accurarcy:")
         print(result1)
@@ -228,9 +231,8 @@ def main():
     x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
     y_train_D1 = None
     # Labled
-    x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
-    y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
-
+    x_train_D2 = x_train[len(x_train) - len(x_train) // 20 :]
+    y_train_D2 = y_train[len(y_train) - len(y_train) // 20 :]
 
     input_shape = Input(shape=(32, 32, 3))
     layers = input_shape
@@ -238,13 +240,13 @@ def main():
     layers = BatchNormalization()(layers)
     layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
     layers = BatchNormalization()(layers)
-
-    layers = Dense(100, activation='relu')(layers)
+    layers = Dense(400, activation='relu')(layers)
     layers = Flatten()(layers) 
     layers = Dense(10, activation='sigmoid')(layers) 
     classifier = Model(input_shape, layers)
-    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    classifier.fit(x_train_D2, y_train_D2, batch_size=5)
+    opt = keras.optimizers.Adam(learning_rate=0.001)
+    classifier.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+    classifier.fit(x_train_D2, y_train_D2, batch_size=5, epochs=1)
 
     result2 = classifier.evaluate(x_test, y_test, verbose=0)
     print("Classifier loss and accurarcy:")
