@@ -66,7 +66,7 @@ class Autoencoder:
         self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=100)
 
     def train_classifier(self, x_train, y_train):
-        self.classifier.fit(x_train, y_train, epochs=10)
+        self.classifier.fit(x_train, y_train, epochs=1, batch_size=100)
 
     def evaluate(self, x_test, y_test):
         return self.classifier.evaluate(x_test, y_test)
@@ -109,7 +109,7 @@ class Decoder:
         autoencoder.fit(x_test, x_test, epochs=1, batch_size=50)
 
 def autotest():
-    dataset = "rsrbse"
+    dataset = "mnist"
     if dataset == "mnist":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -121,22 +121,28 @@ def autotest():
         y_train = to_categorical(y_train, 10)
 
         # Unlabled
-        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
+        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 20]
         y_train_D1 = None
         # Labled
-        x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
-        y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 20 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 20 :]
     
         latent_units_size = 1000
         autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
         autoencoder.train_autoencoder(x_train_D1)
+        autoencoder.train_autoencoder(x_train_D1)
         autoencoder.train_classifier(x_train_D2, y_train_D2)
+
         classifier = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
         classifier.train_classifier(x_train_D2, y_train_D2)
-        result1 = autoencoder.evaluate(x_test, y_test)
-        result2 = classifier.evaluate(x_test, y_test)
-        print("Loss autoencoder: " + str(result1))
-        print("Loss classifier: " + str(result2))
+
+        result1 = autoencoder.classifier.evaluate(x_test, y_test, verbose=0)
+        result2 = classifier.classifier.evaluate(x_test, y_test, verbose=0)
+        print("Loss autoencoder:")
+        print(result1)
+        print("Loss classifier")
+        print(result2)
+        quit()
         #plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
     elif dataset == "fashion_mnist":
         image_size = 28
