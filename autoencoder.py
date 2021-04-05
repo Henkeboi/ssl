@@ -9,7 +9,9 @@ from keras.models import Model
 from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout, Reshape, BatchNormalization, UpSampling2D
 import numpy as np
 import matplotlib.pyplot as plt
+from keras.models import model_from_json
 from keras.optimizers import SGD
+import utility
 
 def plot_autoencoder_outputs(autoencoder, n, dims, x_test):
     decoded_imgs = autoencoder.predict(x_test)
@@ -166,15 +168,24 @@ def autotest():
 
         autoencoder = Model(input_shape, layers)
         autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        autoencoder.fit(x_train_D1, x_train_D1, epochs=1, batch_size=50)
+        autoencoder.fit(x_train_D1, x_train_D1, epochs=5, batch_size=50)
+        utility.store_model(autoencoder, 'autoencoder')
+        #autoencoder = utility.load_model('autoencoder')
 
         classifier_layer = Flatten()(latent_layer) 
         classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
         classifier = Model(input_shape, classifier_layer)
         classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+        for layer in autoencoder.layers:
+            layer.trainable = False
+        classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+        classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         classifier.fit(x_train_D2, y_train_D2, batch_size=5)
 
         result1 = classifier.evaluate(x_test, y_test, verbose=0)
+
         print("Autoencoder loss and accurarcy:")
         print(result1)
         #plot_autoencoder_outputs(autoencoder, 5, (image_size, image_size, 3), x_train)

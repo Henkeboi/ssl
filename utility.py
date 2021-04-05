@@ -1,12 +1,17 @@
-class ConvConfig:
-    def __init__(self, input_shape, filters, kernel_size, af):
-        self.input_shape = input_shape
-        self.filters = filters
-        self.kernel_size = kernel_size
-        self.af = af
+from keras.models import model_from_json
 
 
-class DenseConfig:
-    def __init__(self, neurons, af):
-        self.neurons = neurons
-        self.af = af
+def store_model(model, name):
+    model_json = model.to_json()
+    with open('data/' + name + '.json', 'w') as data_file:
+        data_file.write(model_json)
+    model.save_weights('data/' + name + '.h5')
+
+def load_model(name):
+    json_file = open('data/' + name + '.json', 'r')
+    model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(model_json)
+    model.load_weights('data/' + name + '.h5')
+    return model
+
