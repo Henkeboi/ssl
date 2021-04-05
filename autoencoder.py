@@ -76,15 +76,12 @@ class Encoder:
     def __init__(self):
         image_size = 28
         input_shape = (image_size * image_size)
-        autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
 
         layers = Input(shape=input_shape)
-        input_shape = layers
+        self.input_layer = layers
         layers = Dense(784, activation='relu')(layers)
         layers = Dense(120, activation='relu')(layers)
         self.latent_layer = Dense(1000, activation='relu')(layers) # Latent layer
-        self.encoder = Model(input_shape, layers)
-
     
     def is_trainable(trainable):
         for layer in self.encoder.layers:
@@ -94,19 +91,41 @@ class Encoder:
     def get_latent_layer(self):
         return self.latent_layer
 
-class Decoder:
+    def get_input_layer(self):
+        return self.input_layer
+    
+    def get_encoder(self):
+        return self.encoder
+
+class Auto:
     def __init__(self, encoder):
         latent_layer = encoder.get_latent_layer()
-        layers = Dense(120, activation='relu')(layers)
+        layers = Dense(120, activation='relu')(latent_layer)
         layers = Dense(784, activation='sigmoid')(layers)
-        self.decoder = Model(latent_layer, layers)
-        self.decoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        self.autoencoder = Model(encoder.get_input_layer(), layers)
+        self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    def get_decoder(self):
-        return self.decoder
+    def get_autoencoder(self):
+        return self.encoder
 
-    def train(self, x_test):
-        autoencoder.fit(x_test, x_test, epochs=1, batch_size=50)
+    def train(self, x_train):
+        self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=50)
+
+class Classifier:
+    def __init__(self, encoder):
+        input_layer = encoder.get_input_layer()
+        latent_layer = encoder.get_latent_layer()
+        classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
+        self.classifier = Model(input_layer, classifier_layer)
+        self.classifier.compile(optimizer='adam', loss='binary_crossentropy')
+    
+    def train_classifier(self, x_train, y_train):
+        self.classifier.fit(x_train, y_train, epochs=1, batch_size=100)
+
+    def evaluate(self, x_test, y_test):
+        print(self.classifier.evaluate(x_test, y_test, verbose=1))
+ 
+
 
 def autotest():
     dataset = "mnist"
@@ -126,7 +145,24 @@ def autotest():
         # Labled
         x_train_D2 = x_train[len(x_train) - len(x_train) // 20 :]
         y_train_D2 = y_train[len(y_train) - len(y_train) // 20 :]
-    
+
+        encoder = Encoder()
+        autoencoder = Auto(encoder)
+        autoencoder.train(x_train) 
+
+        classifier = Classifier(encoder)
+        classifier.train_classifier(x_train, y_train)
+        classifier.evaluate(x_test, y_test)
+
+        encoder = Encoder()
+        classifier = Classifier(encoder)
+        classifier.train_classifier(x_train, y_train)
+        classifier.evaluate(x_test, y_test)
+
+
+        quit()
+       
+
         latent_units_size = 1000
         autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
         autoencoder.train_autoencoder(x_train_D1)
