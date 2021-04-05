@@ -3,9 +3,10 @@ import data
 import utility
 import keras
 from keras.utils.np_utils import to_categorical
+from keras.models import Sequential
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
-from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout, Reshape, BatchNormalization
+from keras.layers import Dense, Input, Conv2D, Conv2DTranspose, Flatten, MaxPooling2D, Dropout, Reshape, BatchNormalization, UpSampling2D
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.optimizers import SGD
@@ -60,7 +61,7 @@ class Autoencoder:
         self.classifier.compile(optimizer='adam', loss='binary_crossentropy')
 
     def train_autoencoder(self, x_train):
-        self.autoencoder.fit(x_train, x_train, epochs=1)
+        self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=100)
 
     def train_classifier(self, x_train, y_train):
         self.classifier.fit(x_train, y_train, epochs=10)
@@ -70,7 +71,7 @@ class Autoencoder:
 
     
 def autotest():
-    dataset = "fashion_mnist"
+    dataset = "cifar"
     if dataset == "mnist":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -142,52 +143,44 @@ def autotest():
         y_train = to_categorical(y_train, 10)
 
         # Unlabled
-        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 5]
+        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
         y_train_D1 = None
         # Labled
-        x_train_D2 = x_train[len(x_train) - len(x_train) // 5 :]
-        y_train_D2 = y_train[len(y_train) - len(y_train) // 5 :]
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
 
         input_shape = Input(shape=(32, 32, 3))
         layers = input_shape
-        layers = Conv2D(filters=16, kernel_size=(6, 6), activation='relu')(layers)
-        layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
-        layers = MaxPooling2D((2, 2))(layers)
-        layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
-        layers = Conv2D(filters=4, kernel_size=(3, 3), activation='relu')(layers)
-        layers = MaxPooling2D((2, 2))(layers)
-        layers = Flatten()(layers)
-        layers = Dense(1200, activation='relu')(layers)
-        latent_output = Dense(10, activation='sigmoid')(layers)
-        layers = Reshape((20, 20, 3))(layers)
-        layers = Conv2DTranspose(filters=4, kernel_size=(3, 3), activation='relu')(layers)
-        layers = Conv2DTranspose(filters=8, kernel_size=(3, 3), activation='relu')(layers)
-        layers = MaxPooling2D((1, 1))(layers)
-        layers = Conv2DTranspose(filters=16, kernel_size=(4, 4), activation='relu')(layers)
-        layers = Conv2DTranspose(filters=3, kernel_size=(6, 6), activation='sigmoid')(layers)
-        layers = Reshape((32, 32, 3))(layers)
+        layers = Conv2D(filters=32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
+        layers = BatchNormalization()(layers)
+        layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
+        layers = BatchNormalization()(layers)
 
-        opt = SGD(lr=0.1, momentum=0.0)
+        layers = Dense(100, activation='relu')(layers)
+        latent_layer = layers
+
+        layers = UpSampling2D()(layers)
+        layers = Conv2D(32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
+        layers = BatchNormalization()(layers)
+        layers = Conv2D(3,  kernel_size=1, strides=1, padding='same', activation='sigmoid')(layers)
+
         autoencoder = Model(input_shape, layers)
-        autoencoder.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-        autoencoder.fit(x_train_D1, x_train_D1, epochs=1)
+        autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        autoencoder.fit(x_train_D1, x_train_D1, epochs=1, batch_size=50)
 
-        classifier1 = Model(input_shape, latent_output)
-        classifier1.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-        classifier1.fit(x_train_D2, y_train_D2)
+        classifier_layer = Flatten()(latent_layer) 
+        classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
+        classifier = Model(input_shape, classifier_layer)
+        classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        classifier.fit(x_train_D2, y_train_D2, batch_size=5)
 
-        result1 = classifier1.evaluate(x_test, y_test, verbose=0)
-        print("Autoencoder:")
+        result1 = classifier.evaluate(x_test, y_test, verbose=0)
+        print("Autoencoder loss and accurarcy:")
         print(result1)
-
-        #autoencoder.fit(x_train, y_train, epochs=1)
         #plot_autoencoder_outputs(autoencoder, 5, (image_size, image_size, 3), x_train)
 
 def main():
     autotest()
-    quit()
-    image_size = 32
-    latent_units_size = 20
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
@@ -195,31 +188,29 @@ def main():
     y_train = to_categorical(y_train, 10)
 
     # Unlabled
-    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 5]
+    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
     y_train_D1 = None
     # Labled
-    x_train_D2 = x_train[len(x_train) - len(x_train) // 5 :]
-    y_train_D2 = y_train[len(y_train) - len(y_train) // 5 :]
+    x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
+    y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
 
-    opt = SGD(lr=0.1, momentum=0.0)
+
     input_shape = Input(shape=(32, 32, 3))
     layers = input_shape
-    layers = Conv2D(filters=16, kernel_size=(6, 6), activation='relu')(layers)
-    layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
-    layers = MaxPooling2D((2, 2))(layers)
-    layers = Conv2D(filters=8, kernel_size=(3, 3), activation='relu')(layers)
-    layers = Conv2D(filters=4, kernel_size=(3, 3), activation='relu')(layers)
-    layers = MaxPooling2D((2, 2))(layers)
-    layers = Flatten()(layers)
-    layers = Dense(1200, activation='relu')(layers)
-    latent_output = Dense(10, activation='sigmoid')(layers)
+    layers = Conv2D(filters=32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
+    layers = BatchNormalization()(layers)
+    layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
+    layers = BatchNormalization()(layers)
 
-    classifier2 = Model(input_shape, latent_output)
-    classifier2.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-    classifier2.fit(x_train_D2, y_train_D2)
+    layers = Dense(100, activation='relu')(layers)
+    layers = Flatten()(layers) 
+    layers = Dense(10, activation='sigmoid')(layers) 
+    classifier = Model(input_shape, layers)
+    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    classifier.fit(x_train_D2, y_train_D2, batch_size=5)
 
-    result2 = classifier2.evaluate(x_test, y_test, verbose=0)
-    print("Classifier:")
+    result2 = classifier.evaluate(x_test, y_test, verbose=0)
+    print("Classifier loss and accurarcy:")
     print(result2)
 
 if __name__ == '__main__':
