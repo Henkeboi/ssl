@@ -35,51 +35,6 @@ def plot_autoencoder_outputs(autoencoder, n, dims, x_test):
             ax.set_title('Reconstructed Images')
         plt.show()
 
-class Encoder:
-    def __init__(self, la, conv_layers, dense_layers):
-        self.model = tf.keras.models.Sequential()
-        for i in range(len(conv_layers)):
-            filters = conv_layers[i].filters
-            kernel_size = conv_layers[i].kernel_size
-            input_shape = conv_layers[i].input_shape
-            af = conv_layers[i].af
-            if input_shape == None:
-                self.model.add(tf.keras.layers.Conv2D(filters, kernel_size, activation=af))
-            else:
-                self.model.add(tf.keras.layers.Conv2D(filters, kernel_size, input_shape=input_shape, activation=af))
-        self.model.add(tf.keras.layers.Flatten())
-        for i in range(len(dense_layers)):
-            neurons = dense_layers[i].neurons
-            af = dense_layers[i].af
-            self.model.add(tf.keras.layers.Dense(neurons, activation=af))
-        self.model.compile(optimizer='adam', loss='categorical_crossentropy') 
-
-    def train(self, x_train, y_train, epochs):
-        # Batch, height, width, channels
-        x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], x_train.shape[2], 1)
-        y_train = to_categorical(y_train, 10)
-        self.model.fit(x_train, y_train, epochs=epochs)
-            
-class Decoder:
-    def __init__(self, la, conv_layers, dense_layers):
-        self.encoder = Encoder(la, conv_layers, dense_layers)
-        self.model = tf.keras.models.Sequential()
-                
-        for i in range(len(dense_layers)):
-            neurons = dense_layers[i].neurons
-            af = dense_layers[i].af
-            self.model.add(tf.keras.layers.Dense(neurons, activation=af))
-
-        for i in range(len(conv_layers)):
-            filters = conv_layers[i].filters
-            kernel_size = conv_layers[i].kernel_size
-            input_shape = conv_layers[i].input_shape
-            self.model.add(tf.keras.layers.Conv2DTranspose(filters, kernel_size, activation=af))
-        self.model.compile(optimizer='adam', loss='categorical_crossentropy')
-
-    def train(self, x_train, y_train, epochs):
-        pass
-
 class Autoencoder:
     def __init__(self, input_shape, latent_size, encoder_layers, decoder_layers):
         layers = Input(shape=input_shape)
@@ -115,7 +70,7 @@ class Autoencoder:
 
     
 def autotest():
-    dataset = "mnist"
+    dataset = "fashion_mnist"
     if dataset == "mnist":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -148,14 +103,35 @@ def autotest():
         #plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
     elif dataset == "fashion_mnist":
         image_size = 28
+        latent_units_size = 100
         (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
         x_train = x_train.astype('float32') / 255.0
         x_test = x_test.astype('float32') / 255.0
         x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
         x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+        y_test = to_categorical(y_test, 10)
+        y_train = to_categorical(y_train, 10)
+
+        # Unlabled
+        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
+        y_train_D1 = None
+        # Labled
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
+    
         autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
-        autoencoder.train(x_train)
-        plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
+        autoencoder.train_autoencoder(x_train_D1)
+        autoencoder.train_classifier(x_train_D2, y_train_D2)
+
+        classifier = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
+        classifier.train_classifier(x_train_D2, y_train_D2)
+
+        result1 = autoencoder.evaluate(x_test, y_test)
+        result2 = classifier.evaluate(x_test, y_test)
+        print("Loss autoencoder: " + str(result1))
+        print("Loss classifier: " + str(result2))
+        
+        #plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
     else:
         image_size = 32
         latent_units_size = 20
