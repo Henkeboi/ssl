@@ -71,10 +71,44 @@ class Autoencoder:
     def evaluate(self, x_test, y_test):
         return self.classifier.evaluate(x_test, y_test)
 
+
+class Encoder:
+    def __init__(self):
+        image_size = 28
+        input_shape = (image_size * image_size)
+        autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
+
+        layers = Input(shape=input_shape)
+        input_shape = layers
+        layers = Dense(784, activation='relu')(layers)
+        layers = Dense(120, activation='relu')(layers)
+        self.latent_layer = Dense(1000, activation='relu')(layers) # Latent layer
+        self.encoder = Model(input_shape, layers)
+
     
+    def is_trainable(trainable):
+        for layer in self.encoder.layers:
+            layer.trainable = trainable
+        self.encoder.layers[-1].trainable = True # The latent layer is trainable
+
+    def get_latent_layer(self):
+        return self.latent_layer
+
+class Decoder:
+    def __init__(self, encoder):
+        latent_layer = encoder.get_latent_layer()
+        layers = Dense(120, activation='relu')(layers)
+        layers = Dense(784, activation='sigmoid')(layers)
+        self.decoder = Model(latent_layer, layers)
+
+    def get_decoder(self):
+        return self.decoder
+
+
+
 def autotest():
-    dataset = "cifar"
-    if dataset == "mnist":
+    dataset = "mnist"
+    if dataset == "cifar":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
         x_train = x_train.astype('float32') / 255.0
@@ -95,10 +129,8 @@ def autotest():
         autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
         autoencoder.train_autoencoder(x_train_D1)
         autoencoder.train_classifier(x_train_D2, y_train_D2)
-
         classifier = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
         classifier.train_classifier(x_train_D2, y_train_D2)
-
         result1 = autoencoder.evaluate(x_test, y_test)
         result2 = classifier.evaluate(x_test, y_test)
         print("Loss autoencoder: " + str(result1))
@@ -157,10 +189,8 @@ def autotest():
         layers = BatchNormalization()(layers)
         layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
         layers = BatchNormalization()(layers)
-
         layers = Dense(100, activation='relu')(layers)
         latent_layer = layers
-
         layers = UpSampling2D()(layers)
         layers = Conv2D(32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
         layers = BatchNormalization()(layers)
@@ -168,24 +198,20 @@ def autotest():
 
         autoencoder = Model(input_shape, layers)
         autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        autoencoder.fit(x_train_D1, x_train_D1, epochs=5, batch_size=50)
-        utility.store_model(autoencoder, 'autoencoder')
-        #autoencoder = utility.load_model('autoencoder')
+        #autoencoder.fit(x_train_D1, x_train_D1, epochs=2, batch_size=50)
+        #utility.store_model(autoencoder, 'autoencoder')
+        autoencoder = utility.load_model('autoencoder')
+        autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
         classifier_layer = Flatten()(latent_layer) 
         classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
         classifier = Model(input_shape, classifier_layer)
-        classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        for layer in autoencoder.layers:
-            layer.trainable = False
-        classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
+        #for layer in autoencoder.layers:
+        #    layer.trainable = False
         classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         classifier.fit(x_train_D2, y_train_D2, batch_size=5)
-
         result1 = classifier.evaluate(x_test, y_test, verbose=0)
-
         print("Autoencoder loss and accurarcy:")
         print(result1)
         #plot_autoencoder_outputs(autoencoder, 5, (image_size, image_size, 3), x_train)
