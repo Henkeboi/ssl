@@ -12,7 +12,6 @@ from keras.optimizers import SGD
 
 def plot_autoencoder_outputs(autoencoder, n, dims, x_test):
     decoded_imgs = autoencoder.predict(x_test)
-
     # number of example digits to show
     n = 5
     plt.figure(figsize=(10, 4.5))
@@ -101,14 +100,22 @@ class Autoencoder:
         self.autoencoder = Model(input_shape, layers)
         self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
-        self.encoder = Model(input_shape, latent_layer)
-        self.encoder.compile(optimizer='adam', loss='binary_crossentropy')
+        classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
+        self.classifier = Model(input_shape, classifier_layer)
+        self.classifier.compile(optimizer='adam', loss='binary_crossentropy')
 
-    def train(self, x_train):
-        self.autoencoder.fit(x_train, x_train, epochs=3)
+    def train_autoencoder(self, x_train):
+        self.autoencoder.fit(x_train, x_train, epochs=1)
+
+    def train_classifier(self, x_train, y_train):
+        self.classifier.fit(x_train, y_train, epochs=10)
+
+    def evaluate(self, x_test, y_test):
+        return self.classifier.evaluate(x_test, y_test)
+
     
 def autotest():
-    dataset = "cifar"
+    dataset = "mnist"
     if dataset == "mnist":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -116,10 +123,29 @@ def autotest():
         x_test = x_test.astype('float32') / 255.0
         x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
         x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
-        latent_units_size = 20
+        y_test = to_categorical(y_test, 10)
+        y_train = to_categorical(y_train, 10)
+
+        # Unlabled
+        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30]
+        y_train_D1 = None
+        # Labled
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
+    
+        latent_units_size = 1000
         autoencoder = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
-        autoencoder.train(x_train)
-        plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
+        autoencoder.train_autoencoder(x_train_D1)
+        autoencoder.train_classifier(x_train_D2, y_train_D2)
+
+        classifier = Autoencoder((image_size * image_size), latent_units_size, [784, 120], [120, 784])
+        classifier.train_classifier(x_train_D2, y_train_D2)
+
+        result1 = autoencoder.evaluate(x_test, y_test)
+        result2 = classifier.evaluate(x_test, y_test)
+        print("Loss autoencoder: " + str(result1))
+        print("Loss classifier: " + str(result2))
+        #plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
     elif dataset == "fashion_mnist":
         image_size = 28
         (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
@@ -140,11 +166,11 @@ def autotest():
         y_train = to_categorical(y_train, 10)
 
         # Unlabled
-        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 3]
+        x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 5]
         y_train_D1 = None
         # Labled
-        x_train_D2 = x_train[len(x_train) - len(x_train) // 3 :]
-        y_train_D2 = y_train[len(y_train) - len(y_train) // 3 :]
+        x_train_D2 = x_train[len(x_train) - len(x_train) // 5 :]
+        y_train_D2 = y_train[len(y_train) - len(y_train) // 5 :]
 
         input_shape = Input(shape=(32, 32, 3))
         layers = input_shape
@@ -183,6 +209,7 @@ def autotest():
 
 def main():
     autotest()
+    quit()
     image_size = 32
     latent_units_size = 20
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
@@ -192,11 +219,11 @@ def main():
     y_train = to_categorical(y_train, 10)
 
     # Unlabled
-    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 3]
+    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 5]
     y_train_D1 = None
     # Labled
-    x_train_D2 = x_train[len(x_train) - len(x_train) // 3 :]
-    y_train_D2 = y_train[len(y_train) - len(y_train) // 3 :]
+    x_train_D2 = x_train[len(x_train) - len(x_train) // 5 :]
+    y_train_D2 = y_train[len(y_train) - len(y_train) // 5 :]
 
     opt = SGD(lr=0.1, momentum=0.0)
     input_shape = Input(shape=(32, 32, 3))
