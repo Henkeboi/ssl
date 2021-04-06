@@ -109,7 +109,7 @@ class Auto:
         return self.encoder
 
     def train(self, x_train):
-        self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=50)
+        self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=10)
 
 class Classifier:
     def __init__(self, encoder):
@@ -117,8 +117,8 @@ class Classifier:
         latent_layer = encoder.get_latent_layer()
         classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
         self.classifier = Model(input_layer, classifier_layer)
-        self.classifier.compile(optimizer='adam', loss='binary_crossentropy')
-    
+        self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
     def train_classifier(self, x_train, y_train):
         self.classifier.fit(x_train, y_train, epochs=1, batch_size=100)
 
