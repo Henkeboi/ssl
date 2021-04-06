@@ -1,3 +1,4 @@
+import cv2
 import tensorflow as tf
 import data
 import utility
@@ -12,31 +13,6 @@ import matplotlib.pyplot as plt
 from keras.models import model_from_json
 from keras.optimizers import SGD
 import utility
-
-def plot_autoencoder_outputs(autoencoder, n, dims, x_test):
-    decoded_imgs = autoencoder.predict(x_test)
-    # number of example digits to show
-    n = 5
-    plt.figure(figsize=(10, 4.5))
-    for i in range(n):
-        # plot original image
-        ax = plt.subplot(2, n, i + 1)
-        plt.imshow(x_test[i].reshape(*dims))
-        plt.gray()
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        if i == n/2:
-            ax.set_title('Original Images')
-
-        # plot reconstruction 
-        ax = plt.subplot(2, n, i + 1 + n)
-        plt.imshow(decoded_imgs[i].reshape(*dims))
-        plt.show()
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        if i == n/2:
-            ax.set_title('Reconstructed Images')
-        plt.show()
 
 class Encoder:
     def __init__(self, dataset):
@@ -86,6 +62,7 @@ class Autoencoder:
         self.do_training = do_training
         self.store_parameters_after_training = store_parameters_after_training
         self.model_name = model_name
+        self.encoder = encoder
         if encoder.dataset == "mnist":
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
@@ -99,6 +76,7 @@ class Autoencoder:
             self.autoencoder = Model(encoder.get_input_layer(), layers)
             self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'cifer10':
+            self.image_size = 32
             latent_layer = encoder.get_latent_layer()
             layers = UpSampling2D()(latent_layer)
             layers = Conv2D(32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
@@ -118,6 +96,34 @@ class Autoencoder:
         else:
             self.autoencoder = utility.load_model(self.model_name)
             self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    def show_reconstruction(self, input_image):
+        if self.encoder.dataset == 'mnist' or self.encoder.dataset == 'fashion_mnist':  
+            input_image = input_image[0].reshape(1, 28 * 28)
+            output_image = self.autoencoder.predict(input_image)
+
+            input_image = input_image[0]
+            input_image = input_image.reshape(28, 28, 1)
+            output_image = output_image.reshape(28, 28, 1)
+        elif self.encoder.dataset == 'cifer10':
+            input_image = input_image[0].reshape(1, 32, 32, 3)
+            output_image = self.autoencoder.predict(input_image)
+
+            input_image = input_image[0]
+            input_image = input_image.reshape(32, 32, 3)
+            output_image = output_image.reshape(32, 32, 3)
+
+        plt.figure(figsize=(5, 5))
+        ax = plt.subplot(2, 1, 1)
+        plt.axis('off')
+        ax.set_title('Input image')
+        plt.imshow(input_image)
+        ax = plt.subplot(2, 1, 2)
+        plt.axis('off')
+        ax.set_title('Output image')
+        plt.imshow(output_image)
+        plt.show()
+
 
 class Classifier:
     def __init__(self, encoder, do_training, store_parameters_after_training, model_name):
@@ -162,12 +168,14 @@ def main():
     (x_train, y_train), (x_test, y_test) = utility.get_dataset(dataset)
     (x_train_D1, y_train_D1), (x_train_D2, y_train_D2) = utility.split_dataset(x_train, y_train)
 
-    autoencoder_do_training = True
-    autoencoder_store_model = True
+    autoencoder_do_training = False
+    autoencoder_store_model = False
     autoencoder_model_name = 'autoencoder' + str(dataset)
     encoder = Encoder(dataset)
     autoencoder = Autoencoder(encoder, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
     autoencoder.train(x_train) 
+    autoencoder.show_reconstruction(x_test)
+    quit()
 
     classifier_do_training = True
     classifier_store_model = True
