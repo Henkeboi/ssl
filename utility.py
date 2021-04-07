@@ -47,9 +47,9 @@ def get_dataset(dataset):
 
 def split_dataset(x_train, y_train):
     # Unlabled
-    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 20]
+    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 30] # 20 FUnker med mnist.
     y_train_D1 = None
     # Labled
-    x_train_D2 = x_train[len(x_train) - len(x_train) // 20 :]
-    y_train_D2 = y_train[len(y_train) - len(y_train) // 20 :]
+    x_train_D2 = x_train[len(x_train) - len(x_train) // 30 :]
+    y_train_D2 = y_train[len(y_train) - len(y_train) // 30 :]
     return (x_train_D1, y_train_D1), (x_train_D2, y_train_D2)

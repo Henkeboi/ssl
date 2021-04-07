@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from keras.models import model_from_json
 from keras.optimizers import SGD
 import utility
+from sklearn.manifold import TSNE
+import pandas as pd
 
 class Encoder:
     def __init__(self, dataset):
@@ -25,6 +27,8 @@ class Encoder:
             layers = Dense(784, activation='relu')(layers)
             layers = Dense(120, activation='relu')(layers)
             self.latent_layer = Dense(1000, activation='relu')(layers) # Latent layer
+            self.encoder = Model(self.input_layer, self.latent_layer)
+            self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif dataset == 'fashion_mnist':
             image_size = 28
             input_shape = (image_size * image_size)
@@ -41,7 +45,9 @@ class Encoder:
             layers = BatchNormalization()(layers)
             layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
             layers = BatchNormalization()(layers)
-            self.latent_layer = Dense(600, activation='relu')(layers)
+            self.latent_layer = Dense(100, activation='relu')(layers)
+            self.encoder = Model(self.input_layer, self.latent_layer)
+            self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     
     def is_trainable(trainable):
         for layer in self.encoder.layers:
@@ -51,11 +57,28 @@ class Encoder:
     def get_latent_layer(self):
         return self.latent_layer
 
+    def compile(self):
+        self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
     def get_input_layer(self):
         return self.input_layer
     
     def get_encoder(self):
         return self.encoder
+    
+    def show_tSNE(self, input_images):
+
+        latent_vectors = np.ndarray([])
+        tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
+        for i in range(0, 10):
+            input_image1 = input_images[i].reshape(1, 28 * 28)
+            latent_vectors = np.append(self.encoder.predict(input_image1), latent_vectors)
+
+        df = pd.DataFrame(latent_vectors)
+        X_2d = tsne.fit_transform(df)
+        for i in range(0, 10):
+            plt.scatter(i, X_2d[i])
+        plt.show()
 
 class Autoencoder:
     def __init__(self, encoder, do_training, store_parameters_after_training, model_name):
@@ -91,10 +114,12 @@ class Autoencoder:
     def train(self, x_train):
         if self.do_training == True:
             self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=100)
+            self.encoder.compile()
             if self.store_parameters_after_training == True:
                 utility.store_model(self.autoencoder, self.model_name)
         else:
             self.autoencoder = utility.load_model(self.model_name)
+            self.encoder.compile()
             self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     def show_reconstruction(self, input_image):
@@ -123,7 +148,6 @@ class Autoencoder:
         ax.set_title('Output image')
         plt.imshow(output_image)
         plt.show()
-
 
 class Classifier:
     def __init__(self, encoder, do_training, store_parameters_after_training, model_name):
@@ -167,35 +191,37 @@ def main():
     dataset = "cifer10"
     (x_train, y_train), (x_test, y_test) = utility.get_dataset(dataset)
     (x_train_D1, y_train_D1), (x_train_D2, y_train_D2) = utility.split_dataset(x_train, y_train)
+    x_train = None
+    y_train = None
 
+    encoder = Encoder(dataset)
     autoencoder_do_training = False
     autoencoder_store_model = False
     autoencoder_model_name = 'autoencoder' + str(dataset)
-    encoder = Encoder(dataset)
     autoencoder = Autoencoder(encoder, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
     autoencoder.train(x_train) 
-    autoencoder.show_reconstruction(x_test)
-    quit()
+    
+    #autoencoder.show_reconstruction(x_test)
+    #encoder.show_tSNE(x_test)
+    #quit()
+
 
     classifier_do_training = True
-    classifier_store_model = True
+    classifier_store_model = False
     classifer_model_name = 'auto_classifier' + str(dataset)
     autoencoder_classifier = Classifier(encoder, classifier_do_training, classifier_store_model, classifer_model_name)
-    autoencoder_classifier.train_classifier(x_train, y_train)
+    autoencoder_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = autoencoder_classifier.evaluate(x_test, y_test)
     print("Autoencoder classifier loss: " + str(loss) + ". Acc: " + str(acc))
 
-    classifier_do_training = True
-    classifier_store_model = True
-    classifier_model_name = 'simple_classifier' + str(dataset)
     encoder = Encoder(dataset)
+    classifier_do_training = True
+    classifier_store_model = False
+    classifier_model_name = 'simple_classifier' + str(dataset)
     simple_classifier = Classifier(encoder, classifier_do_training, classifier_store_model, classifier_model_name)
-    simple_classifier.train_classifier(x_train, y_train)
+    simple_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = simple_classifier.evaluate(x_test, y_test)
     print("Simple classifier loss: " + str(loss) + ". Acc: " + str(acc))
-
-    # plot_autoencoder_outputs(autoencoder.autoencoder, 5, (image_size, image_size), x_train)
-
 
 
 if __name__ == '__main__':
