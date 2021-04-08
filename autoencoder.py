@@ -25,8 +25,8 @@ class Autoencoder:
         self.model_name = model_name
         self.encoder = encoder
         if encoder.dataset == "mnist":
-            self.epochs = 1
-            self.batch_size = 100
+            self.epochs = 2
+            self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
@@ -81,25 +81,21 @@ class Autoencoder:
         if self.encoder.dataset == 'mnist' or self.encoder.dataset == 'fashion_mnist':  
             input_image = input_image[0].reshape(1, 28 * 28)
             output_image = self.autoencoder.predict(input_image)
-
             input_image = input_image[0]
             input_image = input_image.reshape(28, 28, 1)
             output_image = output_image.reshape(28, 28, 1)
         elif self.encoder.dataset == 'cifer10':
             input_image = input_image[0].reshape(1, 32, 32, 3)
             output_image = self.autoencoder.predict(input_image)
-
             input_image = input_image[0]
             input_image = input_image.reshape(32, 32, 3)
             output_image = output_image.reshape(32, 32, 3)
         elif self.encoder.dataset == 'pets':
             input_image = input_image[0].reshape(1, 180, 180, 3)
             output_image = self.autoencoder.predict(input_image)
-
             input_image = input_image[0]
             input_image = input_image.reshape(180, 180, 3)
             output_image = output_image.reshape(180, 180, 3)
-
 
         plt.figure(figsize=(5, 5))
         ax = plt.subplot(2, 1, 1)

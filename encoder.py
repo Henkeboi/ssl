@@ -15,6 +15,11 @@ from keras.optimizers import SGD
 import utility
 from sklearn.manifold import TSNE
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
+import seaborn as sns
+
+
+from sklearn.datasets import load_iris
 
 class Encoder:
     def __init__(self, dataset):
@@ -60,7 +65,6 @@ class Encoder:
             self.encoder = Model(self.input_layer, self.latent_layer)
             self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    
     def is_trainable(trainable):
         for layer in self.encoder.layers:
             layer.trainable = trainable
@@ -78,16 +82,41 @@ class Encoder:
     def get_encoder(self):
         return self.encoder
     
-    def show_tSNE(self, input_images):
+    def plot_tSNE(self, data, labels):
+        #y = np.array([])
+        #for i in range(len(labels)):
+        #    y = np.append(np.argmax(labels[i]), y)
+        #x = data[0:1000]
+        #y = y[0:1000]
+        #x_predict = self.encoder.predict(x)
+        #x = x_predict
+        #
+        #tsne = TSNE(n_components=2, verbose=1, random_state=123)
+        #z = tsne.fit_transform(x) 
+        #df = pd.DataFrame()
+        #df["y"] = y
+        #df["comp-1"] = z[:,0]
+        #df["comp-2"] = z[:,1]
 
-        latent_vectors = np.ndarray([])
-        tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
-        for i in range(0, 10):
-            input_image1 = input_images[i].reshape(1, 28 * 28)
-            latent_vectors = np.append(self.encoder.predict(input_image1), latent_vectors)
+        #sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
+        #    palette=sns.color_palette("hls", 10),
+        #    data=df).set(title="Iris data T-SNE projection")
+        #plt.show()
 
-        df = pd.DataFrame(latent_vectors)
-        X_2d = tsne.fit_transform(df)
-        for i in range(0, 10):
-            plt.scatter(i, X_2d[i])
+        (x_train, y_train), (_ , _) = keras.datasets.mnist.load_data()
+        x_train = x_train[:3000]
+        y_train = y_train[:3000]
+        x_mnist = np.reshape(x_train, [x_train.shape[0], x_train.shape[1]*x_train.shape[2]])
+
+        tsne = TSNE(n_components=2, verbose=1, random_state=123)
+        z = tsne.fit_transform(x_mnist)
+        df = pd.DataFrame()
+        df["y"] = y_train
+        df["comp-1"] = z[:,0]
+        df["comp-2"] = z[:,1]
+
+        x_mnist = np.reshape(x_train, [x_train.shape[0], x_train.shape[1]*x_train.shape[2]])
+        sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
+                        palette=sns.color_palette("hls", 10),
+                        data=df).set(title="MNIST data T-SNE projection")
         plt.show()

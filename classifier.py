@@ -23,7 +23,9 @@ class Classifier:
         self.do_training = do_training
         self.store_parameters_after_training = store_parameters_after_training
         self.model_name = model_name
+        self.encoder = encoder
         if encoder.dataset == 'mnist':
+            self.epochs = 1
             self.batch_size = 100
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
@@ -31,6 +33,7 @@ class Classifier:
             self.classifier = Model(input_layer, classifier_layer)
             self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'fashion_mnist':
+            self.epochs = 1
             self.batch_size = 100
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
@@ -38,6 +41,7 @@ class Classifier:
             self.classifier = Model(input_layer, classifier_layer)
             self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'cifer10':
+            self.epochs = 1
             self.batch_size = 100
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Flatten()(latent_layer) 
@@ -64,7 +68,7 @@ class Classifier:
         else:
             self.classifier = utility.load_model(self.model_name)
             self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
+        self.encoder.compile()
 
     def evaluate(self, x_test, y_test):
         return self.classifier.evaluate(x_test, y_test, verbose=1)
