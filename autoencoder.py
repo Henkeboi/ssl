@@ -25,21 +25,17 @@ class Autoencoder:
         self.model_name = model_name
         self.encoder = encoder
         if encoder.dataset == "mnist":
-            self.epochs = 2
+            self.epochs = 1
             self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
-            self.autoencoder = Model(encoder.get_input_layer(), layers)
-            self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'fashion_mnist':
             self.epochs = 1
             self.batch_size = 100
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
-            self.autoencoder = Model(encoder.get_input_layer(), layers)
-            self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'cifer10':
             self.epochs = 1
             self.batch_size = 100
@@ -49,19 +45,15 @@ class Autoencoder:
             layers = Conv2D(32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
             layers = BatchNormalization()(layers)
             layers = Conv2D(3,  kernel_size=1, strides=1, padding='same', activation='sigmoid')(layers)
-            self.autoencoder = Model(encoder.get_input_layer(), layers)
-            self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        elif encoder.dataset == 'pets':
-            self.epochs = 1
-            self.batch_size = 100
-            self.image_size = 90
+        elif encoder.dataset == "digits":
+            image_size = 8
+            self.epochs = 10
+            self.batch_size = 1
             latent_layer = encoder.get_latent_layer()
-            layers = UpSampling2D()(latent_layer)
-            layers = Conv2D(32, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
-            layers = BatchNormalization()(layers)
-            layers = Conv2D(3,  kernel_size=1, strides=1, padding='same', activation='sigmoid')(layers)
-            self.autoencoder = Model(encoder.get_input_layer(), layers)
-            self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+            layers = Dense(60, activation='relu')(latent_layer)
+            layers = Dense(image_size ** 2, activation='sigmoid')(layers)
+        self.autoencoder = Model(encoder.get_input_layer(), layers)
+        self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     def get_autoencoder(self):
         return self.encoder
@@ -90,13 +82,13 @@ class Autoencoder:
             input_image = input_image[0]
             input_image = input_image.reshape(32, 32, 3)
             output_image = output_image.reshape(32, 32, 3)
-        elif self.encoder.dataset == 'pets':
-            input_image = input_image[0].reshape(1, 180, 180, 3)
+        elif self.encoder.dataset == 'digits':
+            input_image = input_image[0].reshape(1, 8 * 8)
             output_image = self.autoencoder.predict(input_image)
             input_image = input_image[0]
-            input_image = input_image.reshape(180, 180, 3)
-            output_image = output_image.reshape(180, 180, 3)
-
+            input_image = input_image.reshape(8, 8, 1)
+            output_image = output_image.reshape(8, 8, 1)
+ 
         plt.figure(figsize=(5, 5))
         ax = plt.subplot(2, 1, 1)
         plt.axis('off')

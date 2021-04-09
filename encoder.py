@@ -32,8 +32,6 @@ class Encoder:
             layers = Dense(784, activation='relu')(layers)
             layers = Dense(120, activation='relu')(layers)
             self.latent_layer = Dense(1000, activation='relu')(layers) # Latent layer
-            self.encoder = Model(self.input_layer, self.latent_layer)
-            self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif dataset == 'fashion_mnist':
             image_size = 28
             input_shape = (image_size * image_size)
@@ -51,19 +49,16 @@ class Encoder:
             layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
             layers = BatchNormalization()(layers)
             self.latent_layer = Dense(100, activation='relu')(layers)
-            self.encoder = Model(self.input_layer, self.latent_layer)
-            self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        elif dataset == 'pets':
-            input_shape = Input(shape=(90, 90, 3))
-            layers = input_shape
+        elif dataset == 'digits':
+            image_size = 8
+            input_shape = (image_size * image_size)
+            layers = Input(shape=input_shape)
             self.input_layer = layers
-            layers = Conv2D(filters=16, kernel_size=3, strides=1, padding='same', activation='relu')(layers)
-            layers = BatchNormalization()(layers)
-            layers = Conv2D(filters=16, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
-            layers = BatchNormalization()(layers)
-            self.latent_layer = Dense(100, activation='relu')(layers)
-            self.encoder = Model(self.input_layer, self.latent_layer)
-            self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+            layers = Dense(image_size * image_size, activation='relu')(layers)
+            layers = Dense(60, activation='relu')(layers)
+            self.latent_layer = Dense(60, activation='relu')(layers) # Latent layer
+        self.encoder = Model(self.input_layer, self.latent_layer)
+        self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     def is_trainable(trainable):
         for layer in self.encoder.layers:

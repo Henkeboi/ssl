@@ -7,6 +7,7 @@ import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from PIL import Image
+import sklearn
 
 def store_model(model, name):
     model_json = model.to_json()
@@ -48,54 +49,34 @@ def get_dataset(dataset):
         x_test = x_test.astype('float32') / 255.0
         y_test = to_categorical(y_test, 10)
         y_train = to_categorical(y_train, 10)
-    elif dataset == 'pets':
-        image_size = (90, 90)
-        num_images = 10000
-
-        ds = tf.keras.preprocessing.image_dataset_from_directory(
-                "data/pets/", validation_split=0, seed=1337, image_size=image_size, batch_size=num_images, shuffle=True)
-
-        normalize = layers.experimental.preprocessing.Rescaling(1./ 255)
-        normalized_ds = ds.map(lambda x, y: (normalize(x), y))
-        images, labels = next(iter(normalized_ds))
-
-        validation_split = 0.8
-        x_train = np.empty((int(len(images) * validation_split), 90, 90, 3))
-        y_train = np.empty(int(len(images) * validation_split))
-        train_len = int(len(images) * validation_split) + 1
-        val_len = int(len(images) * (1.0 - validation_split))
-        x_test = np.empty((val_len, 90, 90, 3), dtype='uint8')
-        y_test = np.empty((val_len))
-
-        for i in range(len(images)):
-            if labels[i].numpy().astype(int).item() == 0:
-                if i < int(len(images) * validation_split):
-                    x_train[i] = images[i].numpy()
-                    #plt.imshow(x_train[i])
-                    #plt.show()
-                    #quit()
-                    y_train[i] = 0
-                else:
-                    x_test[i - train_len] = images[i].numpy()
-                    y_test[i - train_len] = 0
-            elif labels[i].numpy().astype(int).item() == 1:
-                if i < int(len(images) * validation_split):
-                    x_train[i] = images[i].numpy()
-                    y_train[i] = 1
-                else:
-                    x_test[i - train_len] = images[i].numpy()
-                    y_test[i - train_len] = 1
-
-        y_train = to_categorical(y_train, 2)
-        y_test = to_categorical(y_test, 2)
+    elif dataset == 'digits':
+        data = sklearn.datasets.load_digits()
+        x = data.data
+        y = data.target
+        x_train = x[0:1000]
+        y_train = y[0:1000]
+        x_test = x[1000:]
+        y_test = y[1000:]
+        x_train = x_train.astype('float32') / 16.0
+        x_test = x_test.astype('float32') / 16.0
+        y_train = to_categorical(y_train, 10)
+        y_test = to_categorical(y_test, 10)
 
     return (x_train, y_train), (x_test, y_test)
 
-def split_dataset(x_train, y_train):
+def split_dataset(x_train, y_train, dataset):
+    if dataset == 'mnist':
+        ratio = 10
+    elif dataset == 'fashion_mnist':
+        ratio = 10
+    elif dataset == 'cifer10':
+        ratio = 10
+    elif dataset == 'digits':
+        ratio = 10
     # Unlabled
-    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // 5] # 2 Funker med mnist. 30 Funker med cifer
+    x_train_D1 = x_train[0 : len(x_train) - len(x_train) // ratio]
     y_train_D1 = None
     # Labled
-    x_train_D2 = x_train[len(x_train) - len(x_train) // 5:]
-    y_train_D2 = y_train[len(y_train) - len(y_train) // 5 :]
+    x_train_D2 = x_train[len(x_train) - len(x_train) // ratio:]
+    y_train_D2 = y_train[len(y_train) - len(y_train) // ratio:]
     return (x_train_D1, y_train_D1), (x_train_D2, y_train_D2)

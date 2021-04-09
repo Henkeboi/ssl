@@ -30,16 +30,12 @@ class Classifier:
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
-            self.classifier = Model(input_layer, classifier_layer)
-            self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'fashion_mnist':
             self.epochs = 1
             self.batch_size = 100
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
-            self.classifier = Model(input_layer, classifier_layer)
-            self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         elif encoder.dataset == 'cifer10':
             self.epochs = 1
             self.batch_size = 100
@@ -47,22 +43,20 @@ class Classifier:
             classifier_layer = Flatten()(latent_layer) 
             classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
             input_layer = encoder.get_input_layer()
-            self.classifier = Model(input_layer, classifier_layer)
-            self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        elif encoder.dataset == 'pets':
-            self.epochs = 1
+        elif encoder.dataset == 'digits':
+            self.epochs = 200
             self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Flatten()(latent_layer) 
-            classifier_layer = Dense(2, activation='sigmoid')(classifier_layer) 
+            classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
             input_layer = encoder.get_input_layer()
-            self.classifier = Model(input_layer, classifier_layer)
-            self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        self.classifier = Model(input_layer, classifier_layer)
+        self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 
     def train_classifier(self, x_train, y_train):
         if self.do_training == True:
-            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size)
+            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=0)
             if self.store_parameters_after_training == True:
                 utility.store_model(self.classifier, self.model_name)
         else:
