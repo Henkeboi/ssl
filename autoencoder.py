@@ -19,7 +19,7 @@ from encoder import Encoder
 from classifier import Classifier
 
 class Autoencoder:
-    def __init__(self, encoder, do_training, store_parameters_after_training, model_name):
+    def __init__(self, encoder, la, loss_function, do_training, store_parameters_after_training, model_name):
         self.do_training = do_training
         self.store_parameters_after_training = store_parameters_after_training
         self.model_name = model_name
@@ -53,7 +53,8 @@ class Autoencoder:
             layers = Dense(60, activation='relu')(latent_layer)
             layers = Dense(image_size ** 2, activation='sigmoid')(layers)
         self.autoencoder = Model(encoder.get_input_layer(), layers)
-        self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        opt = keras.optimizers.Adam(learning_rate=la)
+        self.autoencoder.compile(optimizer='adam', loss=loss_function, metrics=['accuracy'])
 
     def get_autoencoder(self):
         return self.encoder

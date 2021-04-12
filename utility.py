@@ -69,7 +69,7 @@ def split_dataset(x_train, y_train, dataset):
     elif dataset == 'fashion_mnist':
         ratio = 10
     elif dataset == 'cifar10':
-        ratio = 10
+        ratio = 30
     elif dataset == 'digits':
         ratio = 10
 
