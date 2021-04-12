@@ -9,8 +9,21 @@ class Config:
             'la_simple_classifier' : None,
             'loss_function_autoencoder' : None,
             'loss_function_classifier' : None,
-            'optimizer_autoencoder': None,
-            'optimizer_classifier': None
+            'optimizer_autoencoder' : None,
+            'optimizer_classifier' : None,
+            'mnist_latent_size' : None,
+            'fashion_mnist_latent_size' : None,
+            'cifar10_latent_size' : None,
+            'digits_latent_size' : None,
+            'mnist_autoencoder_epochs' : None,
+            'fashion_mnist_autoencoder_epochs' : None,
+            'cifar10_autoencoder_epochs' : None,
+            'digits_autoencoder_epochs' : None,
+            'mnist_classifier_epochs' : None,
+            'fashion_mnist_classifier_epochs' : None,
+            'cifar10_classifier_epochs' : None,
+            'digits_classifier_epochs' : None,
+            'freeze' : None
         }
     
     def get_config(self):
@@ -47,6 +60,34 @@ class Config:
             self.data[variable] = data
         elif variable == 'optimizer_classifier':
             self.data[variable] = data
+        elif variable == 'mnist_latent_size':
+            self.data[variable] = int(data)
+        elif variable == 'fashion_mnist_latent_size':
+            self.data[variable] = int(data)
+        elif variable == 'cifar10_latent_size':
+            self.data[variable] = int(data)
+        elif variable == 'digits_latent_size':
+            self.data[variable] = int(data)
+        elif variable == 'mnist_autoencoder_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'fashion_mnist_autoencoder_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'cifar10_autoencoder_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'digits_autoencoder_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'mnist_classifier_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'fashion_mnist_classifier_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'cifar10_classifier_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'digits_classifier_epochs':
+            self.data[variable] = int(data)
+        elif variable == 'freeze':
+            self.data[variable] = int(data)
+
+
 
 
 

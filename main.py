@@ -34,34 +34,39 @@ def main():
     loss_function_classifier = config_dict['loss_function_classifier']
     optimizer_autoencoder = config_dict['optimizer_autoencoder']
     optimizer_classifier = config_dict['optimizer_classifier']
+    latent_size = config_dict[dataset + '_latent_size']
+    autoencoder_epochs = config_dict[dataset + '_autoencoder_epochs']
+    classifier_epochs = config_dict[dataset + '_classifier_epochs']
+    freeze_encoder = config_dict['freeze']
 
     (x_train, y_train), (x_test, y_test) = utility.get_dataset(dataset)
     (x_train_D1, y_train_D1), (x_train_D2, y_train_D2) = utility.split_dataset(x_train, y_train, dataset)
     x_train = None
     y_train = None
 
-    encoder = Encoder(dataset)
-    autoencoder_do_training = False
+    # Autoencoder
+    encoder = Encoder(dataset, latent_size)
+    autoencoder_do_training = True
     autoencoder_store_model = True
     autoencoder_model_name = 'autoencoder' + str(dataset)
-    autoencoder = Autoencoder(encoder, la_autoencoder, loss_function_autoencoder, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
+    autoencoder = Autoencoder(encoder, freeze_encoder, la_autoencoder, loss_function_autoencoder, optimizer_autoencoder, autoencoder_epochs, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
     autoencoder.train(x_train_D1) 
     #autoencoder.show_reconstruction(x_train_D2)
 
     classifier_do_training = True
     classifier_store_model = True
     classifer_model_name = 'auto_classifier' + str(dataset)
-    autoencoder_classifier = Classifier(encoder, la_autoencoder_classifier, loss_function_classifier, classifier_do_training, classifier_store_model, classifer_model_name)
+    autoencoder_classifier = Classifier(encoder, la_autoencoder_classifier, loss_function_classifier, optimizer_classifier, classifier_epochs, classifier_do_training, classifier_store_model, classifer_model_name)
     autoencoder_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = autoencoder_classifier.evaluate(x_test, y_test)
     print("Autoencoder classifier loss: " + str(loss) + ". Acc: " + str(acc))
     #encoder.plot_tSNE()
 
-    encoder = Encoder(dataset)
+    encoder = Encoder(dataset, latent_size)
     classifier_do_training = True
     classifier_store_model = True
     classifier_model_name = 'simple_classifier' + str(dataset)
-    simple_classifier = Classifier(encoder, la_simple_classifier, loss_function_classifier, classifier_do_training, classifier_store_model, classifier_model_name)
+    simple_classifier = Classifier(encoder, la_simple_classifier, loss_function_classifier, optimizer_classifier, classifier_epochs, classifier_do_training, classifier_store_model, classifier_model_name)
     simple_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = simple_classifier.evaluate(x_test, y_test)
 

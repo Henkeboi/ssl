@@ -23,7 +23,7 @@ import seaborn as sns
 from sklearn.datasets import load_iris
 
 class Encoder:
-    def __init__(self, dataset):
+    def __init__(self, dataset, latent_size):
         self.dataset = dataset
         if dataset == 'mnist':
             image_size = 28
@@ -32,7 +32,7 @@ class Encoder:
             self.input_layer = layers
             layers = Dense(784, activation='relu')(layers)
             layers = Dense(120, activation='relu')(layers)
-            self.latent_layer = Dense(1000, activation='relu')(layers) # Latent layer
+            self.latent_layer = Dense(latent_size, activation='relu')(layers) # Latent layer
         elif dataset == 'fashion_mnist':
             image_size = 28
             input_shape = (image_size * image_size)
@@ -40,7 +40,7 @@ class Encoder:
             self.input_layer = layers
             layers = Dense(784, activation='relu')(layers)
             layers = Dense(120, activation='relu')(layers)
-            self.latent_layer = Dense(1000, activation='relu')(layers) # Latent layer
+            self.latent_layer = Dense(latent_size, activation='relu')(layers) # Latent layer
         elif dataset == 'cifar10':
             input_shape = Input(shape=(32, 32, 3))
             layers = input_shape
@@ -49,7 +49,7 @@ class Encoder:
             layers = BatchNormalization()(layers)
             layers = Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(layers)
             layers = BatchNormalization()(layers)
-            self.latent_layer = Dense(100, activation='relu')(layers)
+            self.latent_layer = Dense(latent_size, activation='relu')(layers)
         elif dataset == 'digits':
             image_size = 8
             input_shape = (image_size * image_size)
@@ -57,13 +57,13 @@ class Encoder:
             self.input_layer = layers
             layers = Dense(image_size * image_size, activation='relu')(layers)
             layers = Dense(60, activation='relu')(layers)
-            self.latent_layer = Dense(60, activation='relu')(layers) # Latent layer
+            self.latent_layer = Dense(latent_size, activation='relu')(layers) # Latent layer
         self.encoder = Model(self.input_layer, self.latent_layer)
         self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    def is_trainable(trainable):
+    def freeze(self):
         for layer in self.encoder.layers:
-            layer.trainable = trainable
+            layer.trainable = False
         self.encoder.layers[-1].trainable = True # The latent layer is trainable
 
     def get_latent_layer(self):

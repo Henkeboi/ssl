@@ -18,39 +18,40 @@ import pandas as pd
 from encoder import Encoder
 
 class Classifier:
-    def __init__(self, encoder, la, loss_function, do_training, store_parameters_after_training, model_name):
+    def __init__(self, encoder, la, loss_function, optimizer, epochs, do_training, store_parameters_after_training, model_name):
         self.do_training = do_training
         self.store_parameters_after_training = store_parameters_after_training
         self.model_name = model_name
         self.encoder = encoder
         if encoder.dataset == 'mnist':
-            self.epochs = 1
+            self.epochs = epochs
             self.batch_size = 100
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
         elif encoder.dataset == 'fashion_mnist':
-            self.epochs = 1
+            self.epochs = epochs
             self.batch_size = 100
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
         elif encoder.dataset == 'cifar10':
-            self.epochs = 2
+            self.epochs = epochs
             self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Flatten()(latent_layer) 
             classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
             input_layer = encoder.get_input_layer()
         elif encoder.dataset == 'digits':
-            self.epochs = 200
+            self.epochs = epochs
             self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Flatten()(latent_layer) 
             classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
             input_layer = encoder.get_input_layer()
         self.classifier = Model(input_layer, classifier_layer)
-        opt = keras.optimizers.Adam(learning_rate=la)
+        if optimizer == 'Adam':
+            opt = keras.optimizers.Adam(learning_rate=la)
         self.classifier.compile(optimizer=opt, loss=loss_function, metrics=['accuracy'])
 
     def train_classifier(self, x_train, y_train):

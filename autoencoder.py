@@ -19,25 +19,26 @@ from encoder import Encoder
 from classifier import Classifier
 
 class Autoencoder:
-    def __init__(self, encoder, la, loss_function, do_training, store_parameters_after_training, model_name):
+    def __init__(self, encoder, freeze, la, loss_function, optimizer, epochs, do_training, store_parameters_after_training, model_name):
         self.do_training = do_training
         self.store_parameters_after_training = store_parameters_after_training
         self.model_name = model_name
         self.encoder = encoder
+        self.freeze = freeze
         if encoder.dataset == "mnist":
-            self.epochs = 1
+            self.epochs = epochs
             self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
         elif encoder.dataset == 'fashion_mnist':
-            self.epochs = 1
+            self.epochs = epochs
             self.batch_size = 100
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
         elif encoder.dataset == 'cifar10':
-            self.epochs = 1
+            self.epochs = epochs
             self.batch_size = 100
             self.image_size = 32
             latent_layer = encoder.get_latent_layer()
@@ -46,14 +47,15 @@ class Autoencoder:
             layers = BatchNormalization()(layers)
             layers = Conv2D(3,  kernel_size=1, strides=1, padding='same', activation='sigmoid')(layers)
         elif encoder.dataset == "digits":
+            self.epochs = epochs
             image_size = 8
-            self.epochs = 10
             self.batch_size = 1
             latent_layer = encoder.get_latent_layer()
             layers = Dense(60, activation='relu')(latent_layer)
             layers = Dense(image_size ** 2, activation='sigmoid')(layers)
         self.autoencoder = Model(encoder.get_input_layer(), layers)
-        opt = keras.optimizers.Adam(learning_rate=la)
+        if optimizer == 'Adam':
+            opt = keras.optimizers.Adam(learning_rate=la)
         self.autoencoder.compile(optimizer='adam', loss=loss_function, metrics=['accuracy'])
 
     def get_autoencoder(self):
@@ -62,11 +64,15 @@ class Autoencoder:
     def train(self, x_train):
         if self.do_training == True:
             self.autoencoder.fit(x_train, x_train, epochs=self.epochs, batch_size=self.batch_size)
+            if self.freeze == 1:
+                self.encoder.freeze()
             self.encoder.compile()
             if self.store_parameters_after_training == True:
                 utility.store_model(self.autoencoder, self.model_name)
         else:
             self.autoencoder = utility.load_model(self.model_name)
+            if self.freeze == 1:
+                self.encoder.freeze()
             self.encoder.compile()
             self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
