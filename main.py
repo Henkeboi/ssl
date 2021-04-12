@@ -43,6 +43,7 @@ def main():
     num_reconstructions = config_dict['num_reconstructions']
     plot_tsne = config_dict['plot_tSNE']
     num_images = 250
+    plot_learning = config_dict['plot_learning']
 
     x_data, y_data = utility.get_dataset(dataset)
     x_train_D1, (x_train_D2, y_train_D2), (x_test_D2, y_test_D2) = utility.split_dataset(x_data, y_data, D1D2_ratio, D2_training_ratio)
@@ -50,18 +51,27 @@ def main():
     # Autoencoder
     encoder = Encoder(dataset, latent_size)
     if plot_tsne == 1:
-        encoder.plot_tSNE(num_images)
+        encoder.plot_tSNE(num_images, 'Stage 1')
+
     autoencoder_do_training = True
     autoencoder_store_model = True
     autoencoder_model_name = 'autoencoder' + str(dataset)
     autoencoder = Autoencoder(encoder, freeze_encoder, la_autoencoder, loss_function_autoencoder, optimizer_autoencoder, autoencoder_epochs, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
 
-    autoencoder.train(x_train_D1) 
+    history = autoencoder.train(x_train_D1) 
+    if plot_learning:
+        x_train = history.history['loss']
+        x_test = autoencoder.evaluate(x_test_D2)
+        print(x_test)
+        plt.plot(x_test)
+        plt.show()
+        quit()
+    
     for i in range(num_reconstructions):
         autoencoder.show_reconstruction(x_test_D2[i])
 
     if plot_tsne == 1:
-        autoencoder.get_encoder().plot_tSNE(num_images)
+        autoencoder.get_encoder().plot_tSNE(num_images, 'Stage 2')
 
     classifier_do_training = True
     classifier_store_model = True
@@ -70,8 +80,6 @@ def main():
     autoencoder_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = autoencoder_classifier.evaluate(x_test_D2, y_test_D2)
     print("Autoencoder classifier loss: " + str(loss) + ". Acc: " + str(acc))
-    if plot_tsne == 1:
-        autoencoder.get_encoder().plot_tSNE(num_images)
 
     simple_encoder = Encoder(dataset, latent_size)
     classifier_do_training = True
@@ -82,6 +90,10 @@ def main():
     loss, acc = simple_classifier.evaluate(x_test_D2, y_test_D2)
     print("Simple classifier loss: " + str(loss) + ". Acc: " + str(acc))
 
+
+    if plot_tsne == 1:
+        autoencoder.get_encoder().plot_tSNE(num_images, 'Stage 3')
+        plt.show()
 
    
 

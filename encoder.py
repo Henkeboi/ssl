@@ -78,14 +78,13 @@ class Encoder:
     def get_encoder(self):
         return self.encoder
     
-    def plot_tSNE(self, num):
-
+    def plot_tSNE(self, num, title):
         self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         if self.dataset == 'mnist':
             (x_train, y_train), (_ , _) = keras.datasets.mnist.load_data()
-            x_train = x_train[:250].reshape(250, 28 ** 2)
+            x_train = x_train[:num].reshape(num, 28 ** 2)
             x_train = self.encoder.predict(x_train)
-            y_train = y_train[:250]
+            y_train = y_train[:num]
 
             tsne = TSNE(n_components=2, verbose=1, random_state=123)
             z = tsne.fit_transform(x_train)
@@ -94,52 +93,48 @@ class Encoder:
             df["1"] = z[:,0]
             df["2"] = z[:,1]
 
+            plt.figure()
             sns.scatterplot(x="1", y="2", hue=df.y.tolist(),
                 palette=sns.color_palette("hls", 10),
-                data=df).set(title="tSNE Mnist")
-            plt.show()
+                data=df).set(title=title + " tSNE Mnist")
         elif self.dataset == 'cifar10':
             (x_train, y_train), (_, _) = keras.datasets.cifar10.load_data() 
-            x_train = x_train[:1000].reshape(1000, 32, 32, 3)
+            x_train = x_train[:num].reshape(num, 32, 32, 3)
             x_train = self.encoder.predict(x_train)
-            y_train = y_train[:1000]
+            y_train = y_train[:num]
             x_mnist = np.reshape(x_train, [x_train.shape[0], x_train.shape[1] * x_train.shape[2] * x_train.shape[3]])
 
             tsne = TSNE(n_components=2, verbose=1, random_state=123)
             z = tsne.fit_transform(x_mnist)
             df = pd.DataFrame()
-            df["y"] = y_train.reshape(1000)
+            df["y"] = y_train.reshape(num)
             df["comp-1"] = z[:,0]
             df["comp-2"] = z[:,1]
 
             x_mnist = np.reshape(x_mnist, [x_train.shape[0], x_train.shape[1] * x_train.shape[2] * x_train.shape[3]])
+            plt.figure()
             sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
                 palette=sns.color_palette("hls", 10),
-                data=df).set(title="tSNE Cifar10")
-            plt.show()
+                data=df).set(title=title + " tSNE Cifar10")
         elif self.dataset == 'digits':
             data = sklearn.datasets.load_digits()
             x = data.data
             y = data.target
-            x_train = x[0:1000]
-            y_train = y[0:1000]
-            x_test = x[1000:]
-            y_test = y[1000:]
-            x_train = x_train.astype('float32') / 16.0
-            x_test = x_test.astype('float32') / 16.0
-            x_train = self.encoder.predict(x_train)
-            x_mnist = np.reshape(x_train, [x_train.shape[0], x_train.shape[1]])
+            x = x[0:num]
+            y = y[0:num]
+            x = self.encoder.predict(x)
+            x = np.reshape(x, [x.shape[0], x.shape[1]])
 
             tsne = TSNE(n_components=2, verbose=1, random_state=123)
-            z = tsne.fit_transform(x_mnist)
+            z = tsne.fit_transform(x)
             df = pd.DataFrame()
-            df["y"] = y_train
+            df["y"] = y
             df["comp-1"] = z[:,0]
             df["comp-2"] = z[:,1]
 
-            x_mnist = np.reshape(x_train, [x_train.shape[0], x_train.shape[1]])
+            x_mnist = np.reshape(x, [x.shape[0], x.shape[1]])
+            plt.figure()
             sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
                 palette=sns.color_palette("hls", 10),
-                data=df).set(title="tSNE Digits")
-            plt.show()
+                data=df).set(title=title + " tSNE Digits")
 

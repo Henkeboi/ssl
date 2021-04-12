@@ -44,7 +44,7 @@ class Classifier:
             input_layer = encoder.get_input_layer()
         elif encoder.dataset == 'digits':
             self.epochs = epochs
-            self.batch_size = 10
+            self.batch_size = 1
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Flatten()(latent_layer) 
             classifier_layer = Dense(10, activation='sigmoid')(classifier_layer) 
@@ -56,7 +56,7 @@ class Classifier:
 
     def train_classifier(self, x_train, y_train):
         if self.do_training == True:
-            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=1)
+            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=0)
             if self.store_parameters_after_training == True:
                 utility.store_model(self.classifier, self.model_name)
         else:

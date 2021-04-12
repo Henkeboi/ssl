@@ -61,14 +61,18 @@ class Autoencoder:
     def get_encoder(self):
         return self.encoder
 
+    def evaluate(self, x):
+        return self.autoencoder.evaluate(x, x)
+
     def train(self, x_train):
         if self.do_training == True:
-            self.autoencoder.fit(x_train, x_train, epochs=self.epochs, batch_size=self.batch_size)
+            history = self.autoencoder.fit(x_train, x_train, epochs=self.epochs, batch_size=self.batch_size)
             if self.freeze == 1:
                 self.encoder.freeze()
             self.encoder.compile()
             if self.store_parameters_after_training == True:
                 utility.store_model(self.autoencoder, self.model_name)
+            return history
         else:
             self.autoencoder = utility.load_model(self.model_name)
             if self.freeze == 1:

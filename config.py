@@ -34,6 +34,7 @@ class Config:
             'digits_classifier_epochs' : None,
             'num_reconstructions': None,
             'plot_tSNE': None,
+            'plot_learning': None,
             'freeze' : None,
             'mnist_D1D2_fraction' : None,
             'mnist_D2_training_fraction' : None,
@@ -126,6 +127,8 @@ class Config:
         elif variable == 'num_reconstructions':
             self.data[variable] = int(data)
         elif variable == 'plot_tSNE':
+            self.data[variable] = int(data)
+        elif variable == 'plot_learning':
             self.data[variable] = int(data)
         elif variable == 'mnist_D1D2_fraction':
             self.data[variable] = int(data)
