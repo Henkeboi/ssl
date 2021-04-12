@@ -27,7 +27,7 @@ class Autoencoder:
         self.freeze = freeze
         if encoder.dataset == "mnist":
             self.epochs = epochs
-            self.batch_size = 10
+            self.batch_size = 1000
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
@@ -58,7 +58,7 @@ class Autoencoder:
             opt = keras.optimizers.Adam(learning_rate=la)
         self.autoencoder.compile(optimizer='adam', loss=loss_function, metrics=['accuracy'])
 
-    def get_autoencoder(self):
+    def get_encoder(self):
         return self.encoder
 
     def train(self, x_train):
@@ -90,9 +90,9 @@ class Autoencoder:
             input_image = input_image.reshape(32, 32, 3)
             output_image = output_image.reshape(32, 32, 3)
         elif self.encoder.dataset == 'digits':
-            input_image = input_image[0].reshape(1, 8 * 8)
+            input_image = input_image.reshape(1, 8 * 8)
             output_image = self.autoencoder.predict(input_image)
-            input_image = input_image[0]
+            input_image = input_image
             input_image = input_image.reshape(8, 8, 1)
             output_image = output_image.reshape(8, 8, 1)
  

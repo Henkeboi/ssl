@@ -35,6 +35,7 @@ def get_dataset(dataset):
         y_test = to_categorical(y_test, 10)
         y_train = to_categorical(y_train, 10)
         y_data = np.concatenate((y_test, y_train))
+        x_data, y_data = sklearn.utils.shuffle(x_data, y_data, random_state=0)
         return x_data, y_data
     elif dataset == "fashion_mnist":
         image_size = 28
@@ -48,9 +49,7 @@ def get_dataset(dataset):
         y_train = to_categorical(y_train, 10)
         y_data = np.concatenate((y_test, y_train))
         return x_data, y_data
-
     elif dataset == 'cifar10':
-
         image_size = 32
         (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
         x_train = x_train.astype('float32') / 255.0
@@ -60,27 +59,13 @@ def get_dataset(dataset):
         y_train = to_categorical(y_train, 10)
         y_data = np.concatenate((y_test, y_train))
         return x_data, y_data
-
-        image_size = 32
-        latent_units_size = 20
-        (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
-        x_train = x_train.astype('float32') / 255.0
-        x_test = x_test.astype('float32') / 255.0
-        y_test = to_categorical(y_test, 10)
-        y_train = to_categorical(y_train, 10)
     elif dataset == 'digits':
         data = sklearn.datasets.load_digits()
-        x = data.data
-        y = data.target
-        x_train = x[0:1000]
-        y_train = y[0:1000]
-        x_test = x[1000:]
-        y_test = y[1000:]
-        x_train = x_train.astype('float32') / 16.0
-        x_test = x_test.astype('float32') / 16.0
-        y_train = to_categorical(y_train, 10)
-        y_test = to_categorical(y_test, 10)
-    return (x_train, y_train), (x_test, y_test)
+        x_data = data.data
+        y_data = data.target
+        x_data = x_data.astype('float32') / 16.0
+        y_data = to_categorical(y_data, 10)
+        return x_data, y_data
 
 def split_dataset(x_data, y_data, D1D2_ratio, D2_training_ratio):
     D1 = x_data[0 : len(x_data) - len(x_data) // D1D2_ratio]

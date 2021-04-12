@@ -78,12 +78,14 @@ class Encoder:
     def get_encoder(self):
         return self.encoder
     
-    def plot_tSNE(self):
+    def plot_tSNE(self, num):
+
+        self.encoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         if self.dataset == 'mnist':
             (x_train, y_train), (_ , _) = keras.datasets.mnist.load_data()
-            x_train = x_train[:1000].reshape(1000, 28 ** 2)
+            x_train = x_train[:250].reshape(250, 28 ** 2)
             x_train = self.encoder.predict(x_train)
-            y_train = y_train[:1000]
+            y_train = y_train[:250]
 
             tsne = TSNE(n_components=2, verbose=1, random_state=123)
             z = tsne.fit_transform(x_train)
@@ -125,6 +127,7 @@ class Encoder:
             y_test = y[1000:]
             x_train = x_train.astype('float32') / 16.0
             x_test = x_test.astype('float32') / 16.0
+            x_train = self.encoder.predict(x_train)
             x_mnist = np.reshape(x_train, [x_train.shape[0], x_train.shape[1]])
 
             tsne = TSNE(n_components=2, verbose=1, random_state=123)
