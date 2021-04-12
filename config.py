@@ -4,9 +4,18 @@ class Config:
     def __init__(self):
         self.data = {
             'dataset' : None,
+            'mnist_la_autoencoder' : None,
+            'mnist_la_autoencoder_classifier' : None,
+            'mnist_la_simple_classifier' : None,
+            'fashion_mnist_la_autoencoder' : None,
+            'fashion_mnist_la_autoencoder_classifier' : None,
+            'fashion_mnist_la_simple_classifier' : None,
             'cifar10_la_autoencoder' : None,
             'cifar10_la_autoencoder_classifier' : None,
             'cifar10_la_simple_classifier' : None,
+            'digits_la_autoencoder' : None,
+            'digits_la_autoencoder_classifier' : None,
+            'digits_la_simple_classifier' : None,
             'loss_function_autoencoder' : None,
             'loss_function_classifier' : None,
             'optimizer_autoencoder' : None,
@@ -23,6 +32,7 @@ class Config:
             'fashion_mnist_classifier_epochs' : None,
             'cifar10_classifier_epochs' : None,
             'digits_classifier_epochs' : None,
+            'num_reconstructions': None,
             'freeze' : None,
             'mnist_D1D2_fraction' : None,
             'mnist_D2_training_fraction' : None,
@@ -54,11 +64,29 @@ class Config:
     def parse_data(self, variable, data):
         if variable == 'dataset':
             self.data[variable] = data
+        elif variable == 'mnist_la_autoencoder':
+            self.data[variable] = float(data)
+        elif variable == 'mnist_la_autoencoder_classifier':
+            self.data[variable] = float(data)
+        elif variable == 'mnist_la_simple_classifier':
+            self.data[variable] = float(data)
+        elif variable == 'fashion_mnist_la_autoencoder':
+            self.data[variable] = float(data)
+        elif variable == 'fashion_mnist_la_autoencoder_classifier':
+            self.data[variable] = float(data)
+        elif variable == 'fashion_mnist_la_simple_classifier':
+            self.data[variable] = float(data)
         elif variable == 'cifar10_la_autoencoder':
             self.data[variable] = float(data)
         elif variable == 'cifar10_la_autoencoder_classifier':
             self.data[variable] = float(data)
         elif variable == 'cifar10_la_simple_classifier':
+            self.data[variable] = float(data)
+        elif variable == 'digits_la_autoencoder':
+            self.data[variable] = float(data)
+        elif variable == 'digits_la_autoencoder_classifier':
+            self.data[variable] = float(data)
+        elif variable == 'digits_la_simple_classifier':
             self.data[variable] = float(data)
         elif variable == 'loss_function_autoencoder':
             self.data[variable] = data
@@ -93,6 +121,8 @@ class Config:
         elif variable == 'digits_classifier_epochs':
             self.data[variable] = int(data)
         elif variable == 'freeze':
+            self.data[variable] = int(data)
+        elif variable == 'num_reconstructions':
             self.data[variable] = int(data)
         elif variable == 'mnist_D1D2_fraction':
             self.data[variable] = int(data)

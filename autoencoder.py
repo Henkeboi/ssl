@@ -33,7 +33,7 @@ class Autoencoder:
             layers = Dense(784, activation='sigmoid')(layers)
         elif encoder.dataset == 'fashion_mnist':
             self.epochs = epochs
-            self.batch_size = 10
+            self.batch_size = 100
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
@@ -78,15 +78,15 @@ class Autoencoder:
 
     def show_reconstruction(self, input_image):
         if self.encoder.dataset == 'mnist' or self.encoder.dataset == 'fashion_mnist':  
-            input_image = input_image[0].reshape(1, 28 * 28)
+            input_image = input_image.reshape(1, 28 * 28)
             output_image = self.autoencoder.predict(input_image)
-            input_image = input_image[0]
+            input_image = input_image
             input_image = input_image.reshape(28, 28, 1)
             output_image = output_image.reshape(28, 28, 1)
         elif self.encoder.dataset == 'cifar10':
-            input_image = input_image[0].reshape(1, 32, 32, 3)
+            input_image = input_image.reshape(1, 32, 32, 3)
             output_image = self.autoencoder.predict(input_image)
-            input_image = input_image[0]
+            input_image = input_image
             input_image = input_image.reshape(32, 32, 3)
             output_image = output_image.reshape(32, 32, 3)
         elif self.encoder.dataset == 'digits':
