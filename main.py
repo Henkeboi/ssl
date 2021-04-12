@@ -22,27 +22,29 @@ import glob
 from PIL import Image
 
 def main():
-    dataset = "cifer10"
+    dataset = "digits"
     (x_train, y_train), (x_test, y_test) = utility.get_dataset(dataset)
     (x_train_D1, y_train_D1), (x_train_D2, y_train_D2) = utility.split_dataset(x_train, y_train, dataset)
     x_train = None
     y_train = None
 
     encoder = Encoder(dataset)
-    autoencoder_do_training = True
+    autoencoder_do_training = False
     autoencoder_store_model = True
     autoencoder_model_name = 'autoencoder' + str(dataset)
     autoencoder = Autoencoder(encoder, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
     autoencoder.train(x_train_D1) 
     #autoencoder.show_reconstruction(x_train_D2)
 
-    classifier_do_training = True
+    classifier_do_training = False
     classifier_store_model = True
     classifer_model_name = 'auto_classifier' + str(dataset)
     autoencoder_classifier = Classifier(encoder, classifier_do_training, classifier_store_model, classifer_model_name)
     autoencoder_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = autoencoder_classifier.evaluate(x_test, y_test)
     print("Autoencoder classifier loss: " + str(loss) + ". Acc: " + str(acc))
+    encoder.plot_tSNE()
+    quit()
 
     encoder = Encoder(dataset)
     classifier_do_training = True
@@ -53,10 +55,7 @@ def main():
     loss, acc = simple_classifier.evaluate(x_test, y_test)
 
     (x_train, y_train), (x_test, y_test) = utility.get_dataset(dataset)
-    #encoder.plot_tSNE(x_train, y_train)
     print("Simple classifier loss: " + str(loss) + ". Acc: " + str(acc))
-
-
 
 if __name__ == '__main__':
     main()

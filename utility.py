@@ -41,7 +41,7 @@ def get_dataset(dataset):
         x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
         y_test = to_categorical(y_test, 10)
         y_train = to_categorical(y_train, 10)
-    elif dataset == 'cifer10':
+    elif dataset == 'cifar10':
         image_size = 32
         latent_units_size = 20
         (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
@@ -61,7 +61,6 @@ def get_dataset(dataset):
         x_test = x_test.astype('float32') / 16.0
         y_train = to_categorical(y_train, 10)
         y_test = to_categorical(y_test, 10)
-
     return (x_train, y_train), (x_test, y_test)
 
 def split_dataset(x_train, y_train, dataset):
@@ -69,13 +68,15 @@ def split_dataset(x_train, y_train, dataset):
         ratio = 10
     elif dataset == 'fashion_mnist':
         ratio = 10
-    elif dataset == 'cifer10':
+    elif dataset == 'cifar10':
         ratio = 10
     elif dataset == 'digits':
         ratio = 10
+
     # Unlabled
     x_train_D1 = x_train[0 : len(x_train) - len(x_train) // ratio]
     y_train_D1 = None
+
     # Labled
     x_train_D2 = x_train[len(x_train) - len(x_train) // ratio:]
     y_train_D2 = y_train[len(y_train) - len(y_train) // ratio:]

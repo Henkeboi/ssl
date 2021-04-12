@@ -36,7 +36,7 @@ class Autoencoder:
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)
-        elif encoder.dataset == 'cifer10':
+        elif encoder.dataset == 'cifar10':
             self.epochs = 1
             self.batch_size = 100
             self.image_size = 32
@@ -76,7 +76,7 @@ class Autoencoder:
             input_image = input_image[0]
             input_image = input_image.reshape(28, 28, 1)
             output_image = output_image.reshape(28, 28, 1)
-        elif self.encoder.dataset == 'cifer10':
+        elif self.encoder.dataset == 'cifar10':
             input_image = input_image[0].reshape(1, 32, 32, 3)
             output_image = self.autoencoder.predict(input_image)
             input_image = input_image[0]

@@ -25,7 +25,7 @@ class Classifier:
         self.model_name = model_name
         self.encoder = encoder
         if encoder.dataset == 'mnist':
-            self.epochs = 1
+            self.epochs = 10
             self.batch_size = 100
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
@@ -36,7 +36,7 @@ class Classifier:
             input_layer = encoder.get_input_layer()
             latent_layer = encoder.get_latent_layer()
             classifier_layer = Dense(10, activation='sigmoid')(latent_layer) 
-        elif encoder.dataset == 'cifer10':
+        elif encoder.dataset == 'cifar10':
             self.epochs = 1
             self.batch_size = 100
             latent_layer = encoder.get_latent_layer()
