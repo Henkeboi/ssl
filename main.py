@@ -53,8 +53,8 @@ def main():
     if plot_tsne == 1:
         encoder.plot_tSNE(num_images, 'Stage 1')
 
-    autoencoder_do_training = True
-    autoencoder_store_model = True
+    autoencoder_do_training = False
+    autoencoder_store_model = False
     autoencoder_model_name = 'autoencoder' + str(dataset)
     autoencoder = Autoencoder(encoder, freeze_encoder, la_autoencoder, loss_function_autoencoder, optimizer_autoencoder, autoencoder_epochs, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
 

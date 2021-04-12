@@ -97,6 +97,23 @@ class Encoder:
             sns.scatterplot(x="1", y="2", hue=df.y.tolist(),
                 palette=sns.color_palette("hls", 10),
                 data=df).set(title=title + " tSNE Mnist")
+        elif self.dataset == 'fashion_mnist':
+            (x_train, y_train), (_ , _) = keras.datasets.fashion_mnist.load_data()
+            x_train = x_train[:num].reshape(num, 28 ** 2)
+            x_train = self.encoder.predict(x_train)
+            y_train = y_train[:num]
+
+            tsne = TSNE(n_components=2, verbose=1, random_state=123)
+            z = tsne.fit_transform(x_train)
+            df = pd.DataFrame()
+            df["y"] = y_train
+            df["1"] = z[:,0]
+            df["2"] = z[:,1]
+
+            plt.figure()
+            sns.scatterplot(x="1", y="2", hue=df.y.tolist(),
+                palette=sns.color_palette("hls", 10),
+                data=df).set(title=title + " tSNE Fashion Mnist")
         elif self.dataset == 'cifar10':
             (x_train, y_train), (_, _) = keras.datasets.cifar10.load_data() 
             x_train = x_train[:num].reshape(num, 32, 32, 3)
