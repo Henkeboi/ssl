@@ -33,7 +33,7 @@ class Autoencoder:
             layers = Dense(784, activation='sigmoid')(layers)
         elif encoder.dataset == 'fashion_mnist':
             self.epochs = epochs
-            self.batch_size = 100
+            self.batch_size = 10
             latent_layer = encoder.get_latent_layer()
             layers = Dense(120, activation='relu')(latent_layer)
             layers = Dense(784, activation='sigmoid')(layers)

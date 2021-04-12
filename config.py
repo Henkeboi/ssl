@@ -4,9 +4,9 @@ class Config:
     def __init__(self):
         self.data = {
             'dataset' : None,
-            'la_autoencoder' : None,
-            'la_autoencoder_classifier' : None,
-            'la_simple_classifier' : None,
+            'cifar10_la_autoencoder' : None,
+            'cifar10_la_autoencoder_classifier' : None,
+            'cifar10_la_simple_classifier' : None,
             'loss_function_autoencoder' : None,
             'loss_function_classifier' : None,
             'optimizer_autoencoder' : None,
@@ -23,8 +23,16 @@ class Config:
             'fashion_mnist_classifier_epochs' : None,
             'cifar10_classifier_epochs' : None,
             'digits_classifier_epochs' : None,
-            'freeze' : None
-        }
+            'freeze' : None,
+            'mnist_D1D2_fraction' : None,
+            'mnist_D2_training_fraction' : None,
+            'fashion_mnist_D1D2_fraction' : None,
+            'fashion_mnist_D2_training_fraction' : None,
+            'cifar10_D1D2_fraction' : None,
+            'cifar10_D2_training_fraction' : None,
+            'digits_D1D2_fraction' : None,
+            'digits_D2_training_fraction' : None
+       }
     
     def get_config(self):
         self.read_config()
@@ -46,11 +54,11 @@ class Config:
     def parse_data(self, variable, data):
         if variable == 'dataset':
             self.data[variable] = data
-        elif variable == 'la_autoencoder':
+        elif variable == 'cifar10_la_autoencoder':
             self.data[variable] = float(data)
-        elif variable == 'la_autoencoder_classifier':
+        elif variable == 'cifar10_la_autoencoder_classifier':
             self.data[variable] = float(data)
-        elif variable == 'la_simple_classifier':
+        elif variable == 'cifar10_la_simple_classifier':
             self.data[variable] = float(data)
         elif variable == 'loss_function_autoencoder':
             self.data[variable] = data
@@ -86,8 +94,19 @@ class Config:
             self.data[variable] = int(data)
         elif variable == 'freeze':
             self.data[variable] = int(data)
-
-
-
-
-
+        elif variable == 'mnist_D1D2_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'mnist_D2_training_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'fashion_mnist_D1D2_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'fashion_mnist_D2_training_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'cifar10_D1D2_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'cifar10_D2_training_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'digits_D1D2_fraction':
+            self.data[variable] = int(data)
+        elif variable == 'digits_D2_training_fraction':
+            self.data[variable] = int(data)
