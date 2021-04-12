@@ -70,6 +70,7 @@ class Autoencoder:
             if self.freeze == 1:
                 self.encoder.freeze()
             self.encoder.compile()
+            self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
             if self.store_parameters_after_training == True:
                 utility.store_model(self.autoencoder, self.model_name)
             return history

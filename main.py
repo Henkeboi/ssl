@@ -58,6 +58,7 @@ def main():
     autoencoder_model_name = 'autoencoder' + str(dataset)
     autoencoder = Autoencoder(encoder, freeze_encoder, la_autoencoder, loss_function_autoencoder, optimizer_autoencoder, autoencoder_epochs, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
 
+
     history = autoencoder.train(x_train_D1) 
     if plot_learning:
         x_train = history.history['loss']
@@ -84,8 +85,8 @@ def main():
     simple_encoder = Encoder(dataset, latent_size)
     classifier_do_training = True
     classifier_store_model = True
-    classifier_model_name = 'simple_classifier' + str(dataset)
-    simple_classifier = Classifier(simple_encoder, la_simple_classifier, loss_function_classifier, optimizer_classifier, classifier_epochs, classifier_do_training, classifier_store_model, classifier_model_name)
+    simple_classifier_model_name = 'simple_classifier' + str(dataset)
+    simple_classifier = Classifier(simple_encoder, la_simple_classifier, loss_function_classifier, optimizer_classifier, classifier_epochs, classifier_do_training, classifier_store_model, simple_classifier_model_name)
     simple_classifier.train_classifier(x_train_D2, y_train_D2)
     loss, acc = simple_classifier.evaluate(x_test_D2, y_test_D2)
     print("Simple classifier loss: " + str(loss) + ". Acc: " + str(acc))
