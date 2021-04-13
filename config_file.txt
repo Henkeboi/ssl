@@ -1,4 +1,4 @@
-dataset:digits
+dataset:fashion_mnist
 mnist_la_autoencoder:0.1
 mnist_la_autoencoder_classifier:0.001
 mnist_la_simple_classifier:0.001
@@ -31,11 +31,11 @@ cifar10_classifier_epochs:10
 cifar10_D1D2_fraction:10
 cifar10_D2_training_fraction:2
 digits_latent_size:200
-digits_autoencoder_epochs:10
+digits_autoencoder_epochs:8
 digits_classifier_epochs:50
 digits_D1D2_fraction:40
 digits_D2_training_fraction:3
 freeze:0
-num_reconstructions:1
+num_reconstructions:0
 plot_tSNE:0
 plot_learning:1
