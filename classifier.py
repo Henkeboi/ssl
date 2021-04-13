@@ -52,17 +52,25 @@ class Classifier:
         self.classifier = Model(input_layer, classifier_layer)
         if optimizer == 'Adam':
             opt = keras.optimizers.Adam(learning_rate=la)
+        if optimizer == 'SGD':
+            opt = keras.optimizers.SGD(learning_rate=la)
         self.classifier.compile(optimizer=opt, loss=loss_function, metrics=['accuracy'])
 
-    def train_classifier(self, x_train, y_train):
+    def train_classifier(self, x_train, y_train, x_test, y_test):
         if self.do_training == True:
-            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=1)
+            train_history = []
+            test_history = []
+            for i in range(self.epochs):
+                train_history.append(self.classifier.fit(x_train, y_train, epochs=1, batch_size=self.batch_size).history['accuracy'][0])
+                test_history.append(self.classifier.evaluate(x_test, y_test, batch_size=self.batch_size)[1])
             if self.store_parameters_after_training == True:
                 utility.store_model(self.classifier, self.model_name)
+            self.encoder.compile()
+            return train_history, test_history
         else:
             self.classifier = utility.load_model(self.model_name)
             self.classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        self.encoder.compile()
+            self.encoder.compile()
 
     def evaluate(self, x_test, y_test):
         return self.classifier.evaluate(x_test, y_test, verbose=1)

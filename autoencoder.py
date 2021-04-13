@@ -56,6 +56,8 @@ class Autoencoder:
         self.autoencoder = Model(encoder.get_input_layer(), layers)
         if optimizer == 'Adam':
             opt = keras.optimizers.Adam(learning_rate=la)
+        elif optimizer == 'SGD':
+            opt = keras.optimizers.SGD(learning_rate=la)
         self.autoencoder.compile(optimizer='adam', loss=loss_function, metrics=['accuracy'])
 
     def get_encoder(self):
@@ -114,4 +116,4 @@ class Autoencoder:
         plt.axis('off')
         ax.set_title('Output image')
         plt.imshow(output_image)
-        plt.show()
+        plt.show(block=False)

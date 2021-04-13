@@ -1,4 +1,4 @@
-dataset:mnist
+dataset:digits
 mnist_la_autoencoder:0.1
 mnist_la_autoencoder_classifier:0.001
 mnist_la_simple_classifier:0.001
@@ -11,14 +11,14 @@ cifar10_la_simple_classifier:0.0005
 digits_la_autoencoder:0.1
 digits_la_autoencoder_classifier:0.001
 digits_la_simple_classifier:0.001
-loss_function_autoencoder:binary_crossentropy
+loss_function_autoencoder:mse
 loss_function_classifier:binary_crossentropy
 optimizer_autoencoder:Adam
 optimizer_classifier:Adam
 mnist_latent_size:1000
 mnist_classifier_epochs:10
-mnist_autoencoder_epochs:5
-mnist_D1D2_fraction:500
+mnist_autoencoder_epochs:2
+mnist_D1D2_fraction:1000
 mnist_D2_training_fraction:2
 fashion_mnist_latent_size:1000
 fashion_mnist_autoencoder_epochs:10
@@ -32,10 +32,10 @@ cifar10_D1D2_fraction:10
 cifar10_D2_training_fraction:2
 digits_latent_size:200
 digits_autoencoder_epochs:10
-digits_classifier_epochs:10
+digits_classifier_epochs:50
 digits_D1D2_fraction:40
 digits_D2_training_fraction:3
 freeze:0
-num_reconstructions:0
+num_reconstructions:1
 plot_tSNE:0
 plot_learning:1
