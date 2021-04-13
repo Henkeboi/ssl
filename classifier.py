@@ -56,7 +56,7 @@ class Classifier:
 
     def train_classifier(self, x_train, y_train):
         if self.do_training == True:
-            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=0)
+            self.classifier.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=1)
             if self.store_parameters_after_training == True:
                 utility.store_model(self.classifier, self.model_name)
         else:

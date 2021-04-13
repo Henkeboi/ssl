@@ -64,16 +64,20 @@ class Autoencoder:
     def evaluate(self, x):
         return self.autoencoder.evaluate(x, x)
 
-    def train(self, x_train):
+    def train(self, x_train, x_test):
+        x_train_history = []
+        x_test_history = []
         if self.do_training == True:
-            history = self.autoencoder.fit(x_train, x_train, epochs=self.epochs, batch_size=self.batch_size)
+            for i in range(self.epochs):
+                x_train_history.append(self.autoencoder.fit(x_train, x_train, epochs=1, batch_size=self.batch_size).history['loss'][0])
+                x_test_history.append(self.autoencoder.evaluate(x_test, x_test, batch_size=self.batch_size)[0])
             if self.freeze == 1:
                 self.encoder.freeze()
             self.encoder.compile()
             self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
             if self.store_parameters_after_training == True:
                 utility.store_model(self.autoencoder, self.model_name)
-            return history
+            return x_train_history, x_test_history
         else:
             self.autoencoder = utility.load_model(self.model_name)
             if self.freeze == 1:

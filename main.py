@@ -53,20 +53,23 @@ def main():
     if plot_tsne == 1:
         encoder.plot_tSNE(num_images, 'Stage 1')
 
-    autoencoder_do_training = False
-    autoencoder_store_model = False
+    autoencoder_do_training = True
+    autoencoder_store_model = True
     autoencoder_model_name = 'autoencoder' + str(dataset)
     autoencoder = Autoencoder(encoder, freeze_encoder, la_autoencoder, loss_function_autoencoder, optimizer_autoencoder, autoencoder_epochs, autoencoder_do_training, autoencoder_store_model, autoencoder_model_name)
 
 
-    history = autoencoder.train(x_train_D1) 
     if plot_learning:
-        x_train = history.history['loss']
-        x_test = autoencoder.evaluate(x_test_D2)
-        print(x_test)
-        plt.plot(x_test)
+        x_train, x_test = autoencoder.train(x_train_D1, x_test_D2)
+        fig, ax = plt.subplots()
+        fig.suptitle('Autoencoder loss')
+        plt.plot(x_train, '-r', label='Training loss')
+        plt.plot(x_test, '-b', label='Validation loss')
+        leg = ax.legend()
         plt.show()
         quit()
+    else:
+        autoencoder.train(x_train_D1, x_test_D2) 
     
     for i in range(num_reconstructions):
         autoencoder.show_reconstruction(x_test_D2[i])
